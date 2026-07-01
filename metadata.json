@@ -1,0 +1,10 @@
+{
+  "name": "GlobalLogix",
+  "description": "High-fidelity logistics command center for modern import-export agencies.",
+  "requestFramePermissions": [
+    "camera"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

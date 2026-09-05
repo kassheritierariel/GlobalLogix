@@ -1,0 +1,177 @@
+# Project TODO
+
+- [x] Concevoir les écrans mobiles GlobalLogix pour iOS et Android
+- [x] Ajouter la navigation par onglets : tableau de bord, expéditions, suivi et paramètres
+- [x] Implémenter une connexion administrateur de démonstration persistante avec AsyncStorage
+- [x] Implémenter le tableau de bord opérationnel
+- [x] Implémenter la liste et le filtre des expéditions
+- [x] Implémenter le suivi temps réel simulé avec pause, reprise et réinitialisation
+- [x] Ajouter la sélection d’une expédition depuis la liste vers le suivi
+- [x] Appliquer l’identité visuelle et générer les ressources de marque mobile
+- [x] Mettre à jour app.config.ts avec le nom et le logo GlobalLogix Mobile
+- [x] Ajouter des tests unitaires déterministes pour la session et le moteur de télémétrie
+- [x] Valider le typage, le lint et le build Expo
+- [x] Documenter le lancement dans Expo Go et la publication Android/iOS
+- [x] Intégrer Firebase Auth dans l’application mobile et sécuriser la session
+- [x] Consommer et rafraîchir les Custom Claims Firebase pour le RBAC mobile
+- [x] Remplacer la simulation locale par un client WebSocket sécurisé et résilient
+- [x] Configurer les notifications push et les alertes de mise à jour d’expédition
+- [x] Ajouter des tests déterministes pour les événements WebSocket et les permissions client
+- [x] Documenter la configuration Firebase, WebSocket et notifications pour Android/iOS
+- [x] Préparer l’attribution du premier rôle Firebase super_admin
+- [x] Documenter la configuration production FCM v1 et APNs
+- [x] Documenter le raccordement WebSocket à la base logistique réelle
+- [x] Livrer la compétence Firebase mobile temps réel et notifications
+- [x] Comparer les plateformes logistiques de référence du marché
+- [x] Définir une feuille de route d’améliorations professionnelles pour GlobalLogix
+- [x] Créer les tables shipments, shipment_events, exception_cases et shipment_share_links
+- [x] Implémenter les services serveur de lecture et écriture des expéditions et événements
+- [x] Créer le centre d’exceptions avec filtrage, priorisation et actions de résolution
+- [x] Créer les liens de suivi client à durée limitée et le portail public sécurisé
+- [x] Ajouter des tests pour les exceptions, événements et liens de partage
+- [x] Étendre la compétence réutilisable au workflow de tour de contrôle logistique
+- [x] Créer et vérifier le premier compte Firebase super_admin
+- [x] Corriger et valider le lien Firebase de définition de mot de passe du super_admin
+- [x] Diagnostiquer et fiabiliser la réception de l’e-mail Firebase de définition de mot de passe du super_admin
+- [x] Définir et vérifier un mot de passe temporaire sécurisé pour le super_admin
+- [x] Créer et vérifier le premier compte Firebase agency_admin avec périmètre d’agence
+- [x] Ajouter une page de profil avec changement de mot de passe Firebase
+- [x] Configurer et valider FCM v1 Android pour les notifications push de production
+- [ ] Obtenir un compte Apple Developer Program et une clé APNs pour activer les notifications iOS
+- [x] Créer la compétence réutilisable du workflow GlobalLogix Firebase, RBAC et notifications
+- [x] Étendre le provisionnement Firebase aux rôles staff et viewer de l’agence GLX2430001
+- [x] Ajouter une interface de gestion des utilisateurs pour l’administrateur d’agence
+- [x] Créer les comptes staff et viewer lorsque leurs adresses e-mail seront fournies
+- [x] Définir le socle produit professionnel GlobalLogix inspiré des standards de DHL
+- [x] Renforcer la gestion des utilisateurs, équipes et permissions opérationnelles
+- [x] Moderniser les écrans de suivi, expéditions et exceptions pour une tour de contrôle professionnelle
+- [ ] Vérifier les parcours et l’ergonomie sur Android, iOS et Web
+- [x] Vérifier les Custom Claims staff/viewer et préparer leurs tests de connexion Firebase
+- [ ] Vérifier la connexion Firebase réelle des comptes staff et viewer après définition de leurs mots de passe
+- [x] Ajouter la modification de rôle et le retrait sécurisé des utilisateurs d’agence
+- [x] Ajouter une localisation multimodale aérienne, maritime et terrestre aux expéditions
+- [x] Préparer et valider la configuration de build Android pour tester les notifications push
+- [x] Ajouter des filtres de transport aérien, maritime et terrestre au tableau de bord
+- [x] Ajouter une recherche rapide des utilisateurs dans la gestion d’équipe
+- [x] Préparer le lancement de la prochaine APK Android de test depuis l’interface de publication
+- [x] Structurer les données de carte, de transit et d’export pour les expéditions
+- [ ] Ajouter une carte interactive de suivi aérien, maritime et terrestre avec mode de repli sans Google Maps
+- [ ] Corriger la clé Google Maps et activer la carte native de production
+- [x] Ajouter une fiche détaillée de colis avec historique de transit et statuts
+- [x] Ajouter les exports CSV et PDF des listes filtrées de colis
+- [x] Appliquer l’identité visuelle RDC bleu, jaune et rouge à l’ensemble de l’application
+- [x] Ajouter le partage sécurisé du lien de suivi depuis la fiche colis
+- [x] Ajouter un simulateur contrôlé de mises à jour GPS dans le tableau de bord
+- [x] Préparer le lancement d’une APK Android pour tester les détails et exports de colis
+- [x] Ajouter un QR code pour le lien de suivi client sécurisé
+- [x] Rendre le simulateur GPS configurable par vitesse et type de transport
+- [x] Ajouter une vue de secours claire lorsque Google Maps est indisponible
+- [x] Ajouter le téléchargement et l’impression du QR code de suivi client
+- [x] Ajouter le partage direct du lien client sécurisé par e-mail et messagerie
+- [x] Ajouter une progression visuelle au simulateur GPS selon le transport
+- [x] Définir la vérification sécurisée du numéro WhatsApp et l’unicité d’un compte client
+- [x] Intégrer Firebase Phone Auth par SMS dans les builds mobiles pour les numéros WhatsApp des clients
+- [ ] Activer le fournisseur Phone dans Firebase Console et définir un numéro de test SMS
+- [x] Ajouter les données et services sécurisés du portail client avec accès cloisonné aux colis
+- [x] Créer l’inscription client, l’enregistrement de colis et le suivi personnel
+- [x] Valider les restrictions d’accès client et les mises à jour de suivi
+- [x] Redémarrer et vérifier le serveur de développement après indisponibilité
+- [x] Vérifier la disponibilité des parcours client SMS, QR et simulation GPS avant test mobile
+- [ ] Définir le canal WhatsApp et les prérequis d’envoi sécurisé des mises à jour client
+- [ ] Configurer l’envoi automatisé WhatsApp Business et la réception des statuts de livraison
+- [ ] Ajouter les photos de colis et pièces de suivi avec capture ou import
+- [x] Ajouter un historique détaillé des notifications client WhatsApp préparé par agence
+- [x] Étendre le suivi import-export en temps réel avec jalons et preuves visuelles
+- [x] Tester le parcours Web des nouvelles fonctionnalités
+- [x] Préparer les déclinaisons du logo GlobalLogix pour icônes, splash et Web
+- [x] Appliquer le logo GlobalLogix aux écrans et à la configuration de marque
+- [x] Vérifier le rendu du nouveau logo sur le Web et la prochaine APK
+- [x] Créer et valider une compétence réutilisable pour le workflow GlobalLogix
+- [x] Ajouter une page À propos mettant en valeur l’identité GlobalLogix
+- [x] Ajouter l’accès à la page À propos depuis les paramètres
+- [ ] Finaliser la configuration WhatsApp Business sécurisée et l’historique de notifications
+- [x] Préparer la publication de la prochaine APK Android avec la nouvelle icône
+- [x] Définir les plans SaaS, limites et règles de souscription différenciées par agence
+- [x] Rechercher la documentation et les possibilités d’intégration du paiement Chariow
+- [x] Créer les données d’abonnement, de facturation et de transaction par agence
+- [x] Ajouter les écrans de gestion SaaS et de souscription pour les administrateurs d’agence
+- [x] Préparer les paiements Chariow, les retours de transaction et l’activation après confirmation
+- [ ] Configurer les produits licence Chariow correspondant aux plans GlobalLogix
+- [x] Conserver le checkout Chariow en mode configuration inactive jusqu’au remplacement des identifiants et produits
+- [x] Étendre la compétence réutilisable au SaaS, à Chariow et à WhatsApp Business
+- [ ] Guider la configuration sécurisée des clés Chariow et des licences GlobalLogix
+- [ ] Vérifier les secrets et prérequis WhatsApp Business avant activation des notifications automatiques
+- [ ] Vérifier la préparation APK Android et guider son lancement depuis Publish
+- [x] Définir le modèle SaaS éditeur unique avec un seul super administrateur GlobalLogix
+- [x] Ajouter le profil d’agence, la personnalisation de marque et les coordonnées opérationnelles
+- [x] Préparer une configuration WhatsApp Business isolée par agence
+- [x] Isoler les identifiants et webhooks Meta de chaque agence sans accès par les autres agences
+- [ ] Reporter l’activation réelle de WhatsApp Business jusqu’à la fourniture d’une clé de chiffrement valide
+- [x] Ajouter une vue de santé opérationnelle et de priorités par agence
+- [x] Ajouter le journal des messages clients et des mises à jour par agence
+- [x] Ajouter des vues de valeur SaaS : santé opérationnelle, alertes et expérience client
+- [x] Créer une première agence SaaS de démonstration avec identité personnalisée
+- [x] Ajouter la prévisualisation sécurisée du tableau de bord d’une agence pour le super administrateur
+- [x] Documenter le réglage d’une clé de chiffrement Meta valide pour les agences
+- [x] Définir le périmètre sécurisé du portail Web centralisateur GlobalLogix
+- [x] Créer un espace Web de supervision réservé au super administrateur
+- [x] Centraliser les agences, opérations, abonnements et journaux de communication dans la vue Web
+- [x] Définir les règles de filtrage temporel et d’activation Meta depuis la console Web
+- [x] Ajouter des filtres temporels aux indicateurs d’activité multi-agence
+- [x] Centraliser les indicateurs d’utilisation, plans et transactions Chariow par agence
+- [x] Permettre au super administrateur d’activer un canal WhatsApp validé sans exposer les secrets Meta
+- [x] Définir les seuils d’alerte d’utilisation et les statuts Meta visibles dans la console
+- [x] Ajouter des alertes visuelles lorsque l’utilisation d’une agence approche ou atteint sa limite
+- [x] Ajouter les exports CSV et PDF pour les données de la période sélectionnée
+- [x] Améliorer les messages de validation et d’échec Meta lors de l’activation WhatsApp
+- [ ] Définir le canal d’envoi e-mail et les destinataires administrateurs des alertes de capacité
+- [ ] Ajouter une alerte e-mail dédupliquée lorsqu’une agence atteint 100 % de sa limite
+- [ ] Remplacer les indicateurs Chariow de démonstration par les produits et transactions réellement configurés
+- [ ] Ajouter un panneau de détails Meta avec erreurs et actions correctives rapides
+- [x] Définir le modèle de lien d’agence dédié et les règles d’isolation par tenant
+- [x] Créer l’inscription guidée de l’administrateur avec les informations générales de l’agence
+- [x] Générer un lien d’accès personnalisé et partageable pour chaque agence
+- [x] Personnaliser l’espace d’agence avec logo, couleurs, coordonnées et canal WhatsApp isolé
+- [x] Rattacher le portail client SMS/WhatsApp à l’agence du lien d’accès sans exposer les autres tenants
+- [x] Vérifier et clarifier le parcours Firebase SMS par numéro WhatsApp dans le portail client d’agence
+- [x] Améliorer les contrôles de logo et de couleurs du portail dédié par l’administrateur d’agence
+- [x] Ajouter une liste de clients par agence avec numéros WhatsApp masqués et statistiques de colis associées
+- [x] Ajouter une fiche client d’agence listant uniquement ses colis et leur état de suivi
+- [x] Définir les jalons d’expédition admissibles aux notifications WhatsApp automatiques et leurs garde-fous par agence
+- [x] Déclencher les notifications WhatsApp automatiques et journaliser leur résultat sans envoyer si le canal Meta est inactif
+- [x] Créer le tableau analytique agence sur volumes de colis, états et engagement WhatsApp
+- [ ] Tester le parcours client Firebase Phone Auth avec un numéro de test configuré
+- [x] Valider la version Web administrateur et préparer les builds Android/iOS depuis Publish
+- [x] Définir les limites de sécurité pour l’assistance Firebase SMS et le simulateur WhatsApp sans envoi réel
+- [x] Ajouter un panneau agence guidant la configuration et le test Firebase SMS par numéro WhatsApp
+- [x] Ajouter un simulateur de notification WhatsApp sans numéro réel ni appel Meta
+- [x] Ajouter un graphique interactif de répartition des statuts sur 30 jours dans l’analytique agence
+- [x] Générer une archive téléchargeable de la version Web validée
+- [x] Définir les exigences de lisibilité et d’accessibilité Android multi-appareil
+- [x] Ajouter un export PDF du graphique de statuts conforme à la période sélectionnée
+- [x] Ajouter des modèles de messages au simulateur WhatsApp sans envoi réel
+- [x] Ajouter un mode sombre dédié aux tableaux de bord administrateur d’agence
+- [x] Améliorer les menus Android et ajouter des commandes de défilement accessibles
+- [x] Vérifier l’interface sur des formats d’écran mobile et Web représentatifs
+- [x] Définir les règles de marque des rapports, d’historique de simulation et d’inscription Google des agences
+- [x] Ajouter le logo, le nom et la couleur de l’agence au rapport PDF analytique
+- [x] Ajouter un historique local des simulations WhatsApp pour l’administrateur d’agence
+- [x] Étendre le mode sombre aux pages d’accueil, réglages et autres écrans administrateur
+- [x] Ajouter le parcours d’inscription d’agence et la connexion Google sécurisée pour les agency_admin
+- [x] Définir les états et contrôles d’approbation ou rejet des demandes d’agence
+- [x] Ajouter l’écran super administrateur de gestion des demandes d’inscription
+- [x] Afficher une confirmation visuelle de demande Google en attente de validation
+- [x] Ajouter un filtre de dates personnalisé à l’export PDF analytique
+- [ ] Définir les canaux e-mail, WhatsApp et SMS de décision avec garde-fous et journalisation
+- [ ] Envoyer une notification e-mail automatique après approbation ou rejet d’une demande d’agence
+- [ ] Préparer les notifications WhatsApp et SMS de décision sans envoi si le canal externe est inactif
+- [ ] Ajouter une recherche et des filtres de statut dans les demandes d’agence du super administrateur
+- [ ] Ajouter une prévisualisation du rapport PDF analytique avant téléchargement
+- [ ] Définir le contrat transactionnel e-mail, SMS et WhatsApp avec isolation par agence
+- [ ] Préparer les secrets sécurisés du fournisseur e-mail transactionnel et du fournisseur SMS
+- [ ] Journaliser les décisions d’agence par canal sans exposer les destinataires complets
+- [x] Résumer les changements récents et revoir les pull requests ouvertes sur GitHub
+- [ ] Vérifier les prérequis des notifications e-mail, SMS et WhatsApp sans envoi réel
+- [ ] Mettre en place la journalisation et les déclencheurs multicanales par agence
+- [ ] Synchroniser les modifications GlobalLogix sur GitHub et créer une pull request vers main
+- [ ] Créer une présentation de synthèse de l’architecture SaaS multi-agence et des fonctions récentes

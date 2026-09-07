@@ -41,7 +41,7 @@ const knownShipments: Record<string, string> = {
 };
 
 function parseAllowedOrigins() {
-  return (process.env.REALTIME_ALLOWED_ORIGINS ?? "").split(",").map((value) => value.trim()).filter(Boolean);
+  return (process.env.REALTIME_ALLOWED_ORIGINS ?? "").split(",").map((value: string) => value.trim()).filter(Boolean);
 }
 
 function isAllowedOrigin(request: IncomingMessage) {

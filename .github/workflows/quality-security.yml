@@ -18,17 +18,17 @@ jobs:
       - name: Récupérer le code
         uses: actions/checkout@v4
 
+      - name: Installer pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.0
+
       - name: Installer Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: pnpm
           cache-dependency-path: pnpm-lock.yaml
-
-      - name: Installer pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9.12.0
 
       - name: Installer les dépendances verrouillées
         run: pnpm install --frozen-lockfile

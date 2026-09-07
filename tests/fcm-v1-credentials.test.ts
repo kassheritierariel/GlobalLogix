@@ -2,6 +2,8 @@ import { createSign } from "node:crypto";
 import { describe, expect, it } from "vitest";
 import { normalizeFirebasePrivateKey } from "../server/firebase-admin";
 
+const describeFirebasePreproduction = process.env.RUN_FIREBASE_PREPROD_TESTS === "true" ? describe : describe.skip;
+
 function base64Url(value: string | Buffer) {
   return Buffer.from(value).toString("base64url");
 }
@@ -22,7 +24,7 @@ function createAssertion(serviceAccount: { client_email: string; private_key: st
   return `${header}.${payload}.${signer.sign(serviceAccount.private_key).toString("base64url")}`;
 }
 
-describe("identifiants FCM v1", () => {
+describeFirebasePreproduction("identifiants FCM v1", () => {
   it("obtient un jeton OAuth court pour envoyer des notifications Android", async () => {
     const raw = process.env.EXPO_PUSH_FCM_V1_SERVICE_ACCOUNT_JSON;
     expect(raw).toBeTruthy();

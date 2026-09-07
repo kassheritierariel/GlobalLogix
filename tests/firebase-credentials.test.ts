@@ -2,6 +2,8 @@ import { createSign } from "node:crypto";
 import { describe, expect, it } from "vitest";
 import { normalizeFirebasePrivateKey } from "../server/firebase-admin";
 
+const describeFirebasePreproduction = process.env.RUN_FIREBASE_PREPROD_TESTS === "true" ? describe : describe.skip;
+
 function base64Url(value: string | Buffer) {
   return Buffer.from(value).toString("base64url");
 }
@@ -24,7 +26,7 @@ function createServiceAccountAssertion(serviceAccount: { client_email: string; p
   return `${unsignedToken}.${signature}`;
 }
 
-describe("Firebase credentials", () => {
+describeFirebasePreproduction("Firebase credentials", () => {
   it("obtient un jeton OAuth de courte durée pour le compte de service configuré", async () => {
     const rawServiceAccount = process.env.FIREBASE_ADMIN_SERVICE_ACCOUNT_JSON;
     expect(rawServiceAccount).toBeTruthy();

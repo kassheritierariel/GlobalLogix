@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 
-describe("connexion Firebase du super_admin", () => {
+const describeFirebasePreproduction = process.env.RUN_FIREBASE_PREPROD_TESTS === "true" ? describe : describe.skip;
+
+describeFirebasePreproduction("connexion Firebase du super_admin", () => {
   it("accepte le mot de passe temporaire défini pour le compte administrateur", async () => {
     const apiKey = process.env.EXPO_PUBLIC_FIREBASE_API_KEY;
     const password = process.env.GLOBALLOGIX_SUPER_ADMIN_TEMP_PASSWORD;

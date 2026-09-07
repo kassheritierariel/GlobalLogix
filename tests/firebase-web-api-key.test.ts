@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 
-describe("clé API Web Firebase", () => {
+const describeFirebasePreproduction = process.env.RUN_FIREBASE_PREPROD_TESTS === "true" ? describe : describe.skip;
+
+describeFirebasePreproduction("clé API Web Firebase", () => {
   it("accède à Identity Toolkit sans restriction de service bloquante", async () => {
     const apiKey = process.env.EXPO_PUBLIC_FIREBASE_API_KEY;
     expect(apiKey).toBeTruthy();

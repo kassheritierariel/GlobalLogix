@@ -1,7 +1,8 @@
 import { getFirebaseIdToken } from "@/lib/firebase";
 import type { BillingCycle, SaaSPlan, SaaSPlanId } from "@/lib/saas-plans";
+import { getApiBaseUrl } from "@/lib/api-base-url";
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL?.replace(/\/$/, "");
+const API_BASE_URL = getApiBaseUrl();
 
 async function authorizedFetch(path: string, options?: RequestInit) {
   if (!API_BASE_URL) throw new Error("EXPO_PUBLIC_API_BASE_URL manquant");

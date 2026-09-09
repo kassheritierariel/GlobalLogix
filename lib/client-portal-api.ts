@@ -1,8 +1,9 @@
 import { getClientFirebaseIdToken } from "@/lib/client-phone-auth";
 import type { DetailedTransitEvent } from "@/lib/shipment-detail";
 import type { Shipment } from "@/lib/types";
+import { getApiBaseUrl } from "@/lib/api-base-url";
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL?.replace(/\/$/, "");
+const API_BASE_URL = getApiBaseUrl();
 
 export type PublicAgency = { publicSlug: string; displayName: string; legalName: string | null; publicEmail: string | null; publicPhone: string | null; website: string | null; logoUrl: string | null; primaryColor: string | null; timeZone: string; supportHours: string | null };
 

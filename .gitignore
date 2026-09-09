@@ -6,6 +6,7 @@ node_modules/
 # Expo
 .expo/
 dist/
+dist-web/
 web-build/
 expo-env.d.ts
 
@@ -53,6 +54,7 @@ app-example
 
 # Logs
 logs
+.manus-logs/
 *.log
 
 # OS

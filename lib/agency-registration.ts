@@ -1,6 +1,7 @@
 import { getFirebaseIdToken } from "@/lib/firebase";
+import { getApiBaseUrl } from "@/lib/api-base-url";
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL?.replace(/\/$/, "");
+const API_BASE_URL = getApiBaseUrl();
 
 export async function submitAgencyRegistration(input: { agencyName: string; publicEmail: string; city: string }) {
   if (!API_BASE_URL) throw new Error("Service d’inscription indisponible dans cette version.");

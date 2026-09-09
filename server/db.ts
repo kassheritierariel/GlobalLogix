@@ -10,6 +10,7 @@ import { encryptAgencyCredential, maskLast4 } from "./agency-credentials";
 import { assertAgencyChannelCanActivate, describeAgencyChannelActivation } from "./agency-whatsapp-activation-policy";
 import { getAgencyUsageAlert } from "./agency-usage-alert-policy";
 import { defaultAgencyPublicSlug, normalizeAgencyPublicSlug } from "./agency-public-link-policy";
+import { normalizeAgencyCustomDomain, type AgencyCustomDomainStatus } from "../lib/agency-custom-domain";
 
 let _db: ReturnType<typeof drizzle> | null = null;
 
@@ -398,6 +399,7 @@ export type AgencyProfileInput = {
   publicEmail?: string | null;
   publicPhone?: string | null;
   website?: string | null;
+  customDomain?: string | null;
   logoUrl?: string | null;
   primaryColor?: string | null;
   timeZone?: string | null;
@@ -432,6 +434,11 @@ export async function upsertAgencyProfile(input: AgencyProfileInput) {
   if (!db) throw new Error("Base de données indisponible pour le profil d’agence");
   const current = await getAgencyProfile(input.agencyId);
   const publicSlug = input.publicSlug?.trim() ? normalizeAgencyPublicSlug(input.publicSlug) : current?.publicSlug ?? defaultAgencyPublicSlug(input.agencyId);
+  const customDomain = input.customDomain === undefined ? current?.customDomain ?? null : normalizeAgencyCustomDomain(input.customDomain);
+  const customDomainChanged = customDomain !== (current?.customDomain ?? null);
+  const customDomainStatus: AgencyCustomDomainStatus = !customDomain
+    ? "not_configured"
+    : customDomainChanged ? "pending_dns" : (current?.customDomainStatus ?? "pending_dns");
   const values = {
     agencyId: input.agencyId,
     publicSlug,
@@ -440,6 +447,9 @@ export async function upsertAgencyProfile(input: AgencyProfileInput) {
     publicEmail: input.publicEmail?.trim().toLowerCase() || null,
     publicPhone: input.publicPhone?.trim() || null,
     website: input.website?.trim() || null,
+    customDomain,
+    customDomainStatus,
+    customDomainRequestedAt: customDomain && customDomainChanged ? new Date() : current?.customDomainRequestedAt ?? null,
     logoUrl: input.logoUrl?.trim() || null,
     primaryColor: input.primaryColor?.trim().toUpperCase() || null,
     timeZone: input.timeZone?.trim() || "Africa/Kinshasa",

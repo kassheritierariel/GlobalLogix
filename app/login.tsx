@@ -1,9 +1,10 @@
-import { useState } from "react";
-import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { useEffect, useRef, useState } from "react";
+import { ActivityIndicator, Animated, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { router } from "expo-router";
 
 import { RdcFlagAccent } from "@/components/rdc-flag-accent";
 import { GlobalLogixBrandLogo } from "@/components/globallogix-brand-logo";
+import { GoogleAuthProgress } from "@/components/google-auth-progress";
 import { useAuth } from "@/lib/auth-context";
 
 export default function LoginScreen() {
@@ -12,6 +13,12 @@ export default function LoginScreen() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isGoogleSubmitting, setIsGoogleSubmitting] = useState(false);
+  const googleProgress = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(googleProgress, { toValue: isGoogleSubmitting ? 1 : 0, duration: 180, useNativeDriver: true }).start();
+  }, [googleProgress, isGoogleSubmitting]);
 
   const submit = async () => {
     setError("");
@@ -25,7 +32,7 @@ export default function LoginScreen() {
       setIsSubmitting(false);
     }
   };
-  const googleLogin = async () => { setError(""); setIsSubmitting(true); try { await loginWithGoogle(); router.replace("/" as never); } catch (caughtError) { setError(caughtError instanceof Error ? caughtError.message : "Connexion Google impossible."); } finally { setIsSubmitting(false); } };
+  const googleLogin = async () => { setError(""); setIsGoogleSubmitting(true); try { await loginWithGoogle(); router.replace("/" as never); } catch (caughtError) { setError(caughtError instanceof Error ? caughtError.message : "Connexion Google impossible."); } finally { setIsGoogleSubmitting(false); } };
 
   return (
     <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={styles.container}>
@@ -46,7 +53,8 @@ export default function LoginScreen() {
         <Pressable disabled={isSubmitting} onPress={submit} style={({ pressed }) => [styles.primaryButton, pressed && styles.pressed, isSubmitting && styles.disabled]}>
           {isSubmitting ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.primaryLabel}>Ouvrir l’espace de suivi</Text>}
         </Pressable>
-        <Pressable disabled={isSubmitting} onPress={() => void googleLogin()} style={({ pressed }) => [styles.googleButton, pressed && styles.pressed, isSubmitting && styles.disabled]}><Text style={styles.googleLabel}>Continuer avec Google</Text></Pressable>
+        <Pressable accessibilityState={{ busy: isGoogleSubmitting, disabled: isSubmitting || isGoogleSubmitting }} disabled={isSubmitting || isGoogleSubmitting} onPress={() => void googleLogin()} style={({ pressed }) => [styles.googleButton, pressed && styles.pressed, (isSubmitting || isGoogleSubmitting) && styles.disabled]}>{isGoogleSubmitting ? <View style={styles.googleBusy}><ActivityIndicator size="small" color="#007FFF" /><Text style={styles.googleLabel}>Ouverture de Google…</Text></View> : <Text style={styles.googleLabel}>Continuer avec Google</Text>}</Pressable>
+        <GoogleAuthProgress visible={isGoogleSubmitting} progress={googleProgress} />
         <Pressable onPress={() => router.push("/agency-signup" as never)} style={({ pressed }) => [styles.signupButton, pressed && styles.pressed]}><Text style={styles.signupLabel}>Créer une demande d’agence SaaS</Text></Pressable>
         <Pressable onPress={() => router.push("/client" as never)} style={({ pressed }) => [styles.clientButton, pressed && styles.pressed]}>
           <Text style={styles.clientButtonLabel}>Je suis client · suivre mes colis par SMS</Text>
@@ -76,6 +84,7 @@ const styles = StyleSheet.create({
   primaryLabel: { color: "#062B5C", fontSize: 16, fontWeight: "800" },
   googleButton: { alignItems: "center", backgroundColor: "#FFFFFF", borderColor: "#C7DBF3", borderRadius: 14, borderWidth: 1, height: 50, justifyContent: "center", marginTop: 10 },
   googleLabel: { color: "#062B5C", fontSize: 14, fontWeight: "800" },
+  googleBusy: { alignItems: "center", flexDirection: "row", gap: 8 },
   signupButton: { alignItems: "center", height: 38, justifyContent: "center", marginTop: 5 },
   signupLabel: { color: "#007FFF", fontSize: 12, fontWeight: "800" },
   clientButton: { alignItems: "center", borderColor: "#007FFF", borderRadius: 14, borderWidth: 1, height: 48, justifyContent: "center", marginTop: 10 },

@@ -1,4 +1,5 @@
 import type { Shipment, ShipmentStatus } from "@/lib/types";
+import { getApiBaseUrl } from "./api-base-url";
 
 export type ShipmentRealtimeEvent = {
   type: "shipment.updated";
@@ -61,7 +62,7 @@ export function mergeShipmentUpdate(current: Shipment[], update: Shipment): Ship
 export function getRealtimeUrl() {
   const explicitUrl = process.env.EXPO_PUBLIC_REALTIME_URL;
   if (explicitUrl) return explicitUrl;
-  const apiUrl = process.env.EXPO_PUBLIC_API_BASE_URL;
+  const apiUrl = getApiBaseUrl();
   if (!apiUrl) return null;
   return apiUrl.replace(/^https:/, "wss:").replace(/^http:/, "ws:") + "/api/realtime";
 }

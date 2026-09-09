@@ -99,6 +99,9 @@ export const agencyProfiles = mysqlTable("agencyProfiles", {
   publicEmail: varchar("publicEmail", { length: 320 }),
   publicPhone: varchar("publicPhone", { length: 32 }),
   website: varchar("website", { length: 512 }),
+  customDomain: varchar("customDomain", { length: 253 }),
+  customDomainStatus: mysqlEnum("customDomainStatus", ["not_configured", "pending_dns", "verified", "disabled"]).notNull().default("not_configured"),
+  customDomainRequestedAt: timestamp("customDomainRequestedAt"),
   logoUrl: varchar("logoUrl", { length: 1024 }),
   primaryColor: varchar("primaryColor", { length: 7 }),
   timeZone: varchar("timeZone", { length: 64 }).notNull().default("Africa/Kinshasa"),
@@ -107,6 +110,7 @@ export const agencyProfiles = mysqlTable("agencyProfiles", {
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 }, (table) => [
   uniqueIndex("agencyProfiles_public_slug_unique").on(table.publicSlug),
+  uniqueIndex("agencyProfiles_custom_domain_unique").on(table.customDomain),
 ]);
 
 /** Demandes d’agence issues d’une identité Firebase vérifiée, sans rôle tenant avant décision de l’éditeur. */

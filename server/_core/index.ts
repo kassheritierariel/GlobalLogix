@@ -2,6 +2,7 @@ import "dotenv/config";
 import express from "express";
 import { createServer } from "http";
 import net from "net";
+import path from "node:path";
 import { randomUUID } from "node:crypto";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { createAgencyMember, createInitialAgencyAdmin, listAgencyMembers, normalizeAgencyId, requestFirebasePasswordReset, requestFirebasePasswordResetForUid, setAgencyMemberDisabled, setClientClaims, setGlobalLogixClaims, updateAgencyMemberRole, verifyFirebaseAuthorization, verifyFirebaseIdentity } from "../firebase-admin";
@@ -23,6 +24,7 @@ import { applyMetaMessageStatus, sendAgencyShipmentUpdate, validateAgencyMetaCon
 import { shouldNotifyAgencyShipmentEvent } from "../agency-shipment-notification-policy";
 import { createAgencyWhatsAppSimulation, WHATSAPP_SIMULATION_EVENT_TYPES } from "../agency-whatsapp-simulation-policy";
 import { notifyOwner } from "./notification";
+import { resolveExpoWebFile } from "../web-static";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise((resolve) => {
@@ -86,7 +88,9 @@ async function startServer() {
       const agencyName = typeof req.body.agencyName === "string" ? req.body.agencyName.trim() : "";
       const publicEmail = typeof req.body.publicEmail === "string" ? req.body.publicEmail.trim().toLowerCase() : "";
       const city = typeof req.body.city === "string" ? req.body.city.trim() : "";
-      if (agencyName.length < 2 || agencyName.length > 120 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(publicEmail) || city.length < 2 || city.length > 120) throw new Error("Vérifiez le nom, l’e-mail public et la ville de l’agence.");
+      if (agencyName.length < 2 || agencyName.length > 120) throw new Error("Le nom commercial de l’agence doit contenir entre 2 et 120 caractères.");
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(publicEmail)) throw new Error("Saisissez une adresse e-mail publique valide, par exemple contact@votreagence.com.");
+      if (city.length < 2 || city.length > 120) throw new Error("La ville principale doit contenir entre 2 et 120 caractères.");
       const { request, deduplicated } = await createAgencyRegistrationRequest({ requesterFirebaseUid: principal.uid, requesterEmail: principal.email, requesterDisplayName: principal.displayName, agencyName, publicEmail, city });
       if (!deduplicated) await notifyOwner({ title: "Nouvelle demande d’agence GlobalLogix", content: `Demande ${agencyName} · ville ${city} · e-mail public ${publicEmail} · compte administrateur ${principal.email}. Validez-la depuis les demandes d’agence.` });
       res.status(202).json({ submitted: true, deduplicated, request: { id: request.id, status: request.status, createdAt: request.createdAt } });
@@ -185,6 +189,7 @@ async function startServer() {
         publicEmail: typeof body.publicEmail === "string" ? body.publicEmail : null,
         publicPhone: typeof body.publicPhone === "string" ? body.publicPhone : null,
         website: typeof body.website === "string" ? body.website : null,
+        customDomain: typeof body.customDomain === "string" ? body.customDomain : null,
         logoUrl: typeof body.logoUrl === "string" ? body.logoUrl : null,
         timeZone: typeof body.timeZone === "string" ? body.timeZone : null,
         supportHours: typeof body.supportHours === "string" ? body.supportHours : null,
@@ -960,6 +965,17 @@ async function startServer() {
       createContext,
     }),
   );
+
+  const webRoot = path.resolve(process.cwd(), "dist", "web");
+  app.use(express.static(webRoot, { extensions: ["html"], index: "index.html" }));
+  app.get("*", (req, res, next) => {
+    const webFile = resolveExpoWebFile(webRoot, req.path);
+    if (!webFile) {
+      next();
+      return;
+    }
+    res.sendFile(webFile);
+  });
 
   const preferredPort = parseInt(process.env.PORT || "3000");
   const port = await findAvailablePort(preferredPort);

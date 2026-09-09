@@ -1,6 +1,7 @@
 import { getFirebaseIdToken } from "@/lib/firebase";
+import { getApiBaseUrl } from "@/lib/api-base-url";
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL?.replace(/\/$/, "");
+const API_BASE_URL = getApiBaseUrl();
 
 async function authorizedFetch(path: string, options?: RequestInit) {
   if (!API_BASE_URL) throw new Error("EXPO_PUBLIC_API_BASE_URL manquant");
@@ -14,7 +15,7 @@ async function authorizedFetch(path: string, options?: RequestInit) {
   return response;
 }
 
-export type AgencyProfile = { agencyId: string; publicSlug: string; displayName: string; legalName: string | null; publicEmail: string | null; publicPhone: string | null; website: string | null; logoUrl: string | null; primaryColor: string | null; timeZone: string; supportHours: string | null };
+export type AgencyProfile = { agencyId: string; publicSlug: string; displayName: string; legalName: string | null; publicEmail: string | null; publicPhone: string | null; website: string | null; customDomain: string | null; customDomainStatus: "not_configured" | "pending_dns" | "verified" | "disabled"; customDomainRequestedAt: string | null; logoUrl: string | null; primaryColor: string | null; timeZone: string; supportHours: string | null };
 export type AgencyWhatsAppConfig = { agencyId: string; metaAppId: string | null; businessAccountId: string | null; phoneNumberId: string | null; senderPhoneLast4: string | null; utilityTemplateName: string | null; status: "draft" | "verified" | "active" | "disabled"; lastValidatedAt: string | null; configured: boolean };
 export type AgencyWhatsAppLog = { id: string; direction: "outbound" | "inbound"; eventType: string; templateName: string | null; status: "queued" | "sent" | "delivered" | "read" | "failed" | "received"; sanitizedSummary: string | null; errorCode: string | null; createdAt: string };
 export type AgencyClientSummary = { firebaseUid: string; displayName: string | null; phoneLast4: string | null; shipmentCount: number; activeShipments: number; deliveredShipments: number; atRiskShipments: number; lastActivityAt: string | null };

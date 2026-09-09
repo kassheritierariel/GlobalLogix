@@ -171,7 +171,34 @@
 - [ ] Préparer les secrets sécurisés du fournisseur e-mail transactionnel et du fournisseur SMS
 - [ ] Journaliser les décisions d’agence par canal sans exposer les destinataires complets
 - [x] Résumer les changements récents et revoir les pull requests ouvertes sur GitHub
+- [x] Mettre à jour la synthèse des changements et la revue des pull requests GitHub
+- [x] Exécuter une revue automatisée Firebase et agencyId de la PR #1
+- [x] Rédiger le plan de test de fusion de feat/saas-multi-agence vers main
+- [x] Générer les notes techniques de présentation de la PR #1
 - [ ] Vérifier les prérequis des notifications e-mail, SMS et WhatsApp sans envoi réel
 - [ ] Mettre en place la journalisation et les déclencheurs multicanales par agence
-- [ ] Synchroniser les modifications GlobalLogix sur GitHub et créer une pull request vers main
-- [ ] Créer une présentation de synthèse de l’architecture SaaS multi-agence et des fonctions récentes
+- [x] Synchroniser les modifications GlobalLogix sur GitHub et créer une pull request vers main
+- [x] Créer une présentation de synthèse de l’architecture SaaS multi-agence et des fonctions récentes
+- [x] Définir les contrôles CI, les limites Firebase préproduction et le périmètre de revue Drizzle
+- [x] Ajouter une CI GitHub Actions qui bloque la fusion si les contrôles de sécurité échouent
+- [x] Exécuter les vérifications Firebase de préproduction sans modifier de comptes ni de données
+- [x] Analyser les migrations Drizzle sous l’angle de l’isolation multi-agence
+- [ ] Faire ajouter le domaine Web GlobalLogix aux domaines autorisés par un propriétaire Firebase
+- [x] Afficher un message actionnable pour l’erreur Firebase auth/unauthorized-domain
+- [x] Valider l’e-mail public de l’agence avant l’envoi de la demande d’inscription
+- [x] Documenter l’autorisation du domaine Web GlobalLogix dans Firebase Authentication
+- [ ] Vérifier le flux Google Firebase sur le domaine Web désormais autorisé
+- [x] Ajouter un indicateur de chargement et des transitions accessibles pendant l’authentification Google
+- [x] Définir le modèle et les règles d’isolation des domaines personnalisés par agence
+- [x] Créer les réglages permettant à une agence de demander et gérer son domaine personnalisé
+- [x] Rendre le frontend Web accessible sur le domaine autorisé avant le test Google de bout en bout
+- [x] Résumer les changements actuels publiés sur GitHub pour GlobalLogix
+- [x] Examiner les pull requests ouvertes, leurs revues, contrôles CI et conflits de fusion
+- [x] Diagnostiquer l’erreur d’affichage du domaine Web publié et des routes directes
+- [x] Corriger la livraison du frontend Expo Web sur le domaine GlobalLogix
+- [x] Vérifier l’affichage responsive sur téléphone et ordinateur avant livraison
+- [ ] Tester le flux Google complet sur le domaine Web public autorisé
+- [ ] Vérifier l’espace public d’une agence sur ordinateur et mobile
+- [ ] Nettoyer les fichiers inutiles sans supprimer les migrations ni les ressources de production
+- [ ] Exécuter les contrôles complets de préparation production
+- [ ] Synchroniser les correctifs de déploiement dans la pull request GitHub ouverte

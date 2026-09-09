@@ -2,6 +2,7 @@ import { onIdTokenChanged, signInWithEmailAndPassword, signOut } from "firebase/
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 
 import { haptic } from "@/lib/haptics";
+import { toFirebaseAuthMessage } from "@/lib/firebase-auth-errors";
 import { getFirebaseAuth, isFirebaseConfigured, signInWithGoogleAccount } from "@/lib/firebase";
 import type { MobileUser } from "@/lib/types";
 
@@ -55,13 +56,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       haptic.success();
     } catch (error) {
       haptic.error();
-      throw error;
+      throw new Error(toFirebaseAuthMessage(error));
     }
   };
 
   const loginWithGoogle = async () => {
     try { await signInWithGoogleAccount(); haptic.success(); }
-    catch (error) { haptic.error(); throw error; }
+    catch (error) { haptic.error(); throw new Error(toFirebaseAuthMessage(error)); }
   };
 
   const logout = async () => {

@@ -1,8 +1,9 @@
 import { getFirebaseIdToken } from "@/lib/firebase";
 import type { Shipment, ShipmentStatus } from "@/lib/types";
 import type { DetailedTransitEvent } from "@/lib/shipment-detail";
+import { getApiBaseUrl } from "@/lib/api-base-url";
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL?.replace(/\/$/, "");
+const API_BASE_URL = getApiBaseUrl();
 
 type ApiShipment = {
   id: string;

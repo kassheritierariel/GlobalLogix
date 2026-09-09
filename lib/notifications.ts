@@ -2,6 +2,7 @@ import Constants from "expo-constants";
 import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
+import { getApiBaseUrl } from "@/lib/api-base-url";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -44,7 +45,7 @@ export async function requestExpoPushToken() {
 }
 
 export async function registerPushTokenWithApi(token: string, firebaseToken: string) {
-  const baseUrl = process.env.EXPO_PUBLIC_API_BASE_URL;
+  const baseUrl = getApiBaseUrl();
   if (!baseUrl) throw new Error("URL de l’API mobile absente.");
 
   const response = await fetch(`${baseUrl}/api/push-tokens`, {

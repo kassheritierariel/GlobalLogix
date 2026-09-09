@@ -1,0 +1,60 @@
+name: Qualité et sécurité
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  quality-security:
+    name: quality-security
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+
+      - name: Installer pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.0
+
+      - name: Installer Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Installer les dépendances verrouillées
+        run: pnpm install --frozen-lockfile
+
+      - name: Vérifier TypeScript
+        run: pnpm check
+
+      - name: Exécuter les tests
+        run: pnpm test
+
+      - name: Refuser les fichiers de secrets locaux
+        shell: bash
+        run: |
+          set -euo pipefail
+          forbidden='(^|/)(\.env($|\.)|google-services\.json|.*service[-_]?account.*\.json|.*private[-_]?key.*|.*\.p12$|.*\.p8$|.*\.pem$)'
+          if git ls-files | grep -Eqi "$forbidden"; then
+            echo "Un fichier de secret ou de configuration locale est suivi par Git."
+            exit 1
+          fi
+
+      - name: Vérifier les garde-fous d’isolation multi-agence
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f server/user-management-policy.ts
+          test -f server/firebase-admin.ts
+          grep -q 'resolveAgencyManagementScope' server/_core/index.ts
+          grep -q 'verifyFirebaseAuthorization' server/_core/index.ts
+          ! grep -E 'res\.json\([^;]*(accessTokenCiphertext|appSecretCiphertext|verifyTokenCiphertext)' server/_core/index.ts

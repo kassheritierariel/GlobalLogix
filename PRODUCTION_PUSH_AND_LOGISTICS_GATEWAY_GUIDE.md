@@ -2,16 +2,16 @@
 
 ## Configuration FCM v1 pour Android
 
-Le projet doit garder l’identifiant Android `com.app.globallogixmobile` stable. Dans Firebase Console, ajouter ou vérifier l’application Android avec cet identifiant, puis télécharger `google-services.json` depuis les paramètres du projet. Placer le fichier à la racine du projet et déclarer son chemin dans `android.googleServicesFile` dans `app.config.ts`. Ce fichier peut être versionné car il contient des identifiants publics ; il ne remplace pas la clé privée du compte de service. [1]
+Le projet doit garder l’identifiant Android `com.app.globallogixmobile` stable. Dans Firebase Console, ajouter ou vérifier l’application Android avec cet identifiant, puis télécharger `google-services.json` depuis les paramètres du projet. Conserver ce fichier hors Git. Dans le projet EAS, créer une variable `GOOGLE_SERVICES_JSON` de type **File**, visibilité **Secret**, environnement **production**, puis téléverser ce fichier. `app.config.ts` utilise directement le chemin éphémère fourni par EAS lorsqu’il existe. En parallèle, le hook `eas-build-pre-install` valide ce fichier et le matérialise avec des permissions restrictives dans `./google-services.json` avant Expo Prebuild. Ce double chemin couvre à la fois la résolution anticipée de la configuration EAS et le cycle distant archive → hook → Prebuild. [1]
 
 Ensuite, dans **Firebase Console → Project settings → Service accounts**, générer un compte de service dédié aux notifications et stocker son JSON uniquement dans un coffre de secrets. Dans le gestionnaire d’identifiants de build Expo, choisir **Android → production → Google Service Account → FCM V1**, puis charger ce JSON. Ne pas réutiliser cette clé dans le bundle mobile ni dans le dépôt. [1]
 
 | Vérification Android | Action attendue |
 |---|---|
-| `google-services.json` | Le fichier est présent et référencé par `android.googleServicesFile`. |
+| `google-services.json` | Le secret EAS `GOOGLE_SERVICES_JSON` est présent dans `production` ; la configuration préfère son chemin éphémère et le hook le matérialise aussi à la racine avant Expo Prebuild. |
 | API key restreinte | Autoriser FCM Registration API et Firebase Installations API si la clé est restreinte. |
 | Signature Play | Utiliser la SHA-1 de la clé de signature Play, et non la clé d’upload, si Play App Signing est activé. |
-| Test réel | Installer une build de développement ou une build de publication sur appareil physique, activer les alertes depuis Réglages et envoyer un événement important. |
+| Test réel | Installer une build de développement ou de publication. Dans Réglages, déclencher d’abord **Tester une notification locale**, puis enregistrer l’appareil physique avec **Activer les alertes distantes**. |
 
 ## Configuration APNs pour iOS
 

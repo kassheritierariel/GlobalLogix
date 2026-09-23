@@ -183,7 +183,7 @@
 - [x] Ajouter une CI GitHub Actions qui bloque la fusion si les contrôles de sécurité échouent
 - [x] Exécuter les vérifications Firebase de préproduction sans modifier de comptes ni de données
 - [x] Analyser les migrations Drizzle sous l’angle de l’isolation multi-agence
-- [ ] Faire ajouter le domaine Web GlobalLogix aux domaines autorisés par un propriétaire Firebase
+- [x] Faire ajouter le domaine Web GlobalLogix aux domaines autorisés par un propriétaire Firebase
 - [x] Afficher un message actionnable pour l’erreur Firebase auth/unauthorized-domain
 - [x] Valider l’e-mail public de l’agence avant l’envoi de la demande d’inscription
 - [x] Documenter l’autorisation du domaine Web GlobalLogix dans Firebase Authentication
@@ -198,7 +198,19 @@
 - [x] Corriger la livraison du frontend Expo Web sur le domaine GlobalLogix
 - [x] Vérifier l’affichage responsive sur téléphone et ordinateur avant livraison
 - [ ] Tester le flux Google complet sur le domaine Web public autorisé
-- [ ] Vérifier l’espace public d’une agence sur ordinateur et mobile
-- [ ] Nettoyer les fichiers inutiles sans supprimer les migrations ni les ressources de production
-- [ ] Exécuter les contrôles complets de préparation production
-- [ ] Synchroniser les correctifs de déploiement dans la pull request GitHub ouverte
+- [x] Identifier le projet Firebase réellement utilisé par le frontend public
+- [x] Ajouter uniquement le domaine de production GlobalLogix aux domaines Firebase autorisés
+- [x] Retester Google après mise à jour de la liste blanche Firebase jusqu’au callback OAuth Firebase
+- [x] Diagnostiquer l’absence de google-services.json dans EAS Build
+- [x] Configurer une injection sécurisée du fichier Firebase Android pour le profil production-apk
+- [x] Ajouter un contrôle reproductible avant le lancement du build Android EAS
+- [x] Vérifier l’espace public d’une agence sur ordinateur et mobile
+- [x] Nettoyer les fichiers inutiles sans supprimer les migrations ni les ressources de production
+- [x] Exécuter les contrôles complets de préparation production
+- [x] Synchroniser les correctifs de déploiement dans la pull request GitHub ouverte
+- [x] Renforcer le message et l’indicateur de progression pendant la connexion Google
+- [x] Ajouter un bouton de test de notification locale et séparer l’activation push distante avec garde-fous
+- [ ] Valider le nouveau build Android avec le secret EAS Firebase configuré
+- [x] Diagnostiquer le cycle Publish/EAS qui ne matérialisait pas le secret fichier avant Expo Prebuild
+- [x] Fournir `google-services.json` par un hook EAS compatible avec une archive sans secret suivi par Git
+- [x] Simuler l’archive EAS et vérifier la matérialisation puis la résolution Expo sans divulguer le fichier

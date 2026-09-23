@@ -1,6 +1,7 @@
 // Load environment variables with proper priority (system > .env)
 import "./scripts/load-env.js";
 import type { ExpoConfig } from "expo/config";
+import { existsSync } from "node:fs";
 
 // Bundle ID format: space.manus.<project_name_dots>.<timestamp>
 // e.g., "my-app" created at 2024-01-15 10:30:45 -> "space.manus.my.app.t20240115103045"
@@ -38,6 +39,15 @@ const env = {
   androidPackage: bundleId,
 };
 
+// Prefer the official EAS file-secret path when it is already available during
+// config resolution. The pre-install hook also materializes the same secret at
+// this stable fallback path before Expo Prebuild runs on the remote builder.
+const googleServicesSecretPath = process.env.GOOGLE_SERVICES_JSON?.trim();
+const googleServicesFile =
+  googleServicesSecretPath && existsSync(googleServicesSecretPath)
+    ? googleServicesSecretPath
+    : "./google-services.json";
+
 const config: ExpoConfig = {
   name: env.appName,
   slug: env.appSlug,
@@ -64,7 +74,7 @@ const config: ExpoConfig = {
     edgeToEdgeEnabled: true,
     predictiveBackGestureEnabled: false,
     package: env.androidPackage,
-    googleServicesFile: "./google-services.json",
+    googleServicesFile,
     permissions: ["POST_NOTIFICATIONS"],
     intentFilters: [
       {
@@ -87,6 +97,8 @@ const config: ExpoConfig = {
   },
   plugins: [
     "expo-router",
+    "expo-font",
+    "expo-web-browser",
     "expo-mail-composer",
     [
       "expo-image-picker",

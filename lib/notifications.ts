@@ -13,17 +13,16 @@ Notifications.setNotificationHandler({
   }),
 });
 
-export async function requestExpoPushToken() {
-  if (!Device.isDevice) {
-    throw new Error("Les notifications push nécessitent un appareil physique.");
+async function ensureNotificationPermission() {
+  if (Platform.OS === "web") {
+    throw new Error("Le test de notification est disponible dans l’application Android ou iOS, pas sur le Web.");
   }
-
   if (Platform.OS === "android") {
     await Notifications.setNotificationChannelAsync("shipment_updates", {
       name: "Mises à jour d’expédition",
       importance: Notifications.AndroidImportance.HIGH,
       vibrationPattern: [0, 220, 180, 220],
-      lightColor: "#FF6B35",
+      lightColor: "#007FFF",
     });
   }
 
@@ -36,6 +35,27 @@ export async function requestExpoPushToken() {
   if (status !== "granted") {
     throw new Error("Les notifications n’ont pas été autorisées.");
   }
+}
+
+export async function triggerLocalNotificationTest() {
+  await ensureNotificationPermission();
+  return Notifications.scheduleNotificationAsync({
+    content: {
+      title: "Test GlobalLogix réussi",
+      body: "Les notifications locales sont autorisées sur ce terminal.",
+      sound: "default",
+      data: { type: "local_notification_test" },
+    },
+    trigger: null,
+  });
+}
+
+export async function requestExpoPushToken() {
+  if (!Device.isDevice) {
+    throw new Error("Les notifications push distantes nécessitent un appareil physique.");
+  }
+
+  await ensureNotificationPermission();
 
   const projectId = Constants.easConfig?.projectId ?? Constants.expoConfig?.extra?.eas?.projectId;
   if (!projectId) {

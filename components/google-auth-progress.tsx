@@ -1,13 +1,31 @@
 import { ActivityIndicator, Animated, StyleSheet, Text, View } from "react-native";
 
-export function GoogleAuthProgress({ visible, progress }: { visible: boolean; progress: Animated.Value }) {
+export type GoogleAuthPhase = "opening" | "waiting" | "finalizing";
+
+const COPY: Record<GoogleAuthPhase, { title: string; text: string }> = {
+  opening: {
+    title: "Ouverture sécurisée de Google",
+    text: "Préparation du sélecteur de compte…",
+  },
+  waiting: {
+    title: "Sélection du compte en cours",
+    text: "Terminez la connexion dans la fenêtre Google. Cette page peut rester ouverte.",
+  },
+  finalizing: {
+    title: "Vérification de votre session",
+    text: "GlobalLogix charge maintenant votre rôle et votre périmètre d’agence.",
+  },
+};
+
+export function GoogleAuthProgress({ visible, progress, phase }: { visible: boolean; progress: Animated.Value; phase: GoogleAuthPhase }) {
   if (!visible) return null;
+  const copy = COPY[phase];
   return (
-    <Animated.View accessibilityLiveRegion="polite" style={[styles.container, { opacity: progress, transform: [{ translateY: progress.interpolate({ inputRange: [0, 1], outputRange: [-8, 0] }) }] }]}>
+    <Animated.View accessibilityLiveRegion="polite" accessibilityRole="progressbar" style={[styles.container, { opacity: progress, transform: [{ translateY: progress.interpolate({ inputRange: [0, 1], outputRange: [-8, 0] }) }] }]}>
       <ActivityIndicator size="small" color="#007FFF" />
       <View style={styles.copy}>
-        <Text style={styles.title}>Connexion Google sécurisée</Text>
-        <Text style={styles.text}>La fenêtre Google est en cours d’ouverture. Ne fermez pas cette page.</Text>
+        <Text style={styles.title}>{copy.title}</Text>
+        <Text style={styles.text}>{copy.text}</Text>
       </View>
     </Animated.View>
   );

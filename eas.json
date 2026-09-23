@@ -8,6 +8,7 @@
       "android": {
         "buildType": "apk"
       },
+      "environment": "production",
       "channel": "production"
     }
   }

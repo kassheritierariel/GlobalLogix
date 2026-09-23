@@ -1,14 +1,14 @@
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { router } from "expo-router";
 import { useRef, useState } from "react";
-import { FlatList, Pressable, StyleSheet, Switch, Text, View } from "react-native";
+import { ActivityIndicator, FlatList, Pressable, StyleSheet, Switch, Text, View } from "react-native";
 
 import { ScreenContainer } from "@/components/screen-container";
 import { ScrollJumpControls } from "@/components/scroll-jump-controls";
 import { useAuth } from "@/lib/auth-context";
 import { getFirebaseIdToken } from "@/lib/firebase";
 import { haptic } from "@/lib/haptics";
-import { registerPushTokenWithApi, requestExpoPushToken } from "@/lib/notifications";
+import { registerPushTokenWithApi, requestExpoPushToken, triggerLocalNotificationTest } from "@/lib/notifications";
 import { useThemeContext } from "@/lib/theme-provider";
 
 const ITEMS = [
@@ -18,26 +18,167 @@ const ITEMS = [
   { icon: "info-outline", title: "À propos", description: "Notre identité, nos fondations et les plateformes prises en charge", color: "#936200", href: "/about" },
 ];
 
+type ActionStatus = "idle" | "loading" | "ready" | "error";
+
 export default function SettingsScreen() {
   const { user, logout, refreshClaims } = useAuth();
   const { colorScheme, setColorScheme } = useThemeContext();
   const listRef = useRef<FlatList<(typeof ITEMS)[number]>>(null);
-  const [pushStatus, setPushStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
+  const [pushStatus, setPushStatus] = useState<ActionStatus>("idle");
+  const [localTestStatus, setLocalTestStatus] = useState<ActionStatus>("idle");
   const [message, setMessage] = useState("");
+  const [messageTone, setMessageTone] = useState<"success" | "error">("success");
+  const notificationActionPending = pushStatus === "loading" || localTestStatus === "loading";
 
-  const signOut = async () => { await logout(); router.replace("/login" as never); };
-  const enablePush = async () => {
-    setPushStatus("loading"); setMessage("");
-    try { const firebaseToken = await getFirebaseIdToken(true); if (!firebaseToken) throw new Error("Connectez-vous avant d’activer les alertes."); const expoToken = await requestExpoPushToken(); await registerPushTokenWithApi(expoToken, firebaseToken); haptic.success(); setPushStatus("ready"); setMessage("Ce terminal recevra les alertes d’expédition importantes."); }
-    catch (error) { haptic.error(); setPushStatus("error"); setMessage(error instanceof Error ? error.message : "Activation des alertes impossible."); }
+  const signOut = async () => {
+    await logout();
+    router.replace("/login" as never);
   };
-  const refreshRole = async () => { try { await refreshClaims(); haptic.success(); setMessage("Les autorisations Firebase ont été actualisées."); } catch { haptic.error(); setMessage("Impossible d’actualiser les autorisations."); } };
 
-  return <ScreenContainer className="bg-background"><View style={[styles.screen, { backgroundColor: colorScheme === "dark" ? "#091725" : "#F3F8FC" }]}><FlatList ref={listRef} data={ITEMS.filter((item) => !item.role || item.role === user?.role)} keyExtractor={(item) => item.title} contentContainerStyle={[styles.content, styles.contentWithScrollControls]} showsVerticalScrollIndicator
-    ListHeaderComponent={<View><Text style={styles.eyebrow}>COMPTE ET APPLICATION</Text><Text style={styles.title}>Réglages</Text><View style={[styles.themeControl, { backgroundColor: colorScheme === "dark" ? "#183651" : "#EAF4FD", borderColor: colorScheme === "dark" ? "#315673" : "#B9D9F7" }]}><View><Text style={[styles.themeTitle, { color: colorScheme === "dark" ? "#F6FAFF" : "#062B5C" }]}>Mode sombre global</Text><Text style={[styles.themeText, { color: colorScheme === "dark" ? "#B6C8D9" : "#65768B" }]}>Appliqué à la navigation et aux espaces administrateur.</Text></View><Switch value={colorScheme === "dark"} onValueChange={(value) => setColorScheme(value ? "dark" : "light")} trackColor={{ false: "#9FB4C7", true: "#3E85C6" }} thumbColor={colorScheme === "dark" ? "#F7D116" : "#FFFFFF"} /></View><View style={styles.profile}><View style={styles.avatar}><Text style={styles.avatarText}>{(user?.displayName ?? "U").slice(0, 1).toUpperCase()}</Text></View><View><Text style={styles.profileName}>{user?.displayName}</Text><Text style={styles.profileMeta}>{user?.role} · {user?.agencyId ?? "Périmètre global"}</Text></View></View></View>}
-    renderItem={({ item }) => item.href ? <Pressable onPress={() => router.push(item.href as never)} style={({ pressed }) => [styles.item, pressed && styles.pressed]}><View style={[styles.itemIcon, { backgroundColor: `${item.color}18` }]}><MaterialIcons name={item.icon as never} size={20} color={item.color} /></View><View style={styles.itemText}><Text style={styles.itemTitle}>{item.title}</Text><Text style={styles.itemDescription}>{item.description}</Text></View><MaterialIcons name="chevron-right" size={22} color="#718496" /></Pressable> : <View style={styles.item}><View style={[styles.itemIcon, { backgroundColor: `${item.color}18` }]}><MaterialIcons name={item.icon as never} size={20} color={item.color} /></View><View style={styles.itemText}><Text style={styles.itemTitle}>{item.title}</Text><Text style={styles.itemDescription}>{item.description}</Text></View></View>}
-    ListFooterComponent={<View style={styles.footer}><Pressable onPress={() => router.push("/profile" as never)} style={({ pressed }) => [styles.profileButton, pressed && styles.pressed]}><MaterialIcons name="person" size={20} color="#0A2540" /><Text style={styles.profileButtonText}>Mon profil et mon mot de passe</Text></Pressable>{user?.role === "super_admin" ? <><Pressable onPress={() => router.push("/agency-directory" as never)} style={({ pressed }) => [styles.agencyButton, pressed && styles.pressed]}><MaterialIcons name="add-business" size={20} color="#FFFFFF" /><Text style={styles.agencyButtonText}>Créer une agence SaaS</Text></Pressable><Pressable onPress={() => router.push("/agency-registration-requests" as never)} style={({ pressed }) => [styles.analyticsButton, pressed && styles.pressed]}><MaterialIcons name="fact-check" size={20} color="#FFFFFF" /><Text style={styles.pushButtonText}>Valider les demandes d’agence</Text></Pressable><Pressable onPress={() => router.push("/agency-preview" as never)} style={({ pressed }) => [styles.previewButton, pressed && styles.pressed]}><MaterialIcons name="visibility" size={20} color="#062B5C" /><Text style={styles.previewButtonText}>Prévisualiser une agence</Text></Pressable></> : null}{user?.role === "agency_admin" ? <><Pressable onPress={() => router.push("/agency-settings" as never)} style={({ pressed }) => [styles.agencyButton, pressed && styles.pressed]}><MaterialIcons name="storefront" size={20} color="#FFFFFF" /><Text style={styles.agencyButtonText}>Marque et WhatsApp de l’agence</Text></Pressable><Pressable onPress={() => router.push("/agency-analytics" as never)} style={({ pressed }) => [styles.analyticsButton, pressed && styles.pressed]}><MaterialIcons name="insights" size={20} color="#FFFFFF" /><Text style={styles.pushButtonText}>Analytique colis et WhatsApp</Text></Pressable><Pressable onPress={() => router.push("/agency-clients" as never)} style={({ pressed }) => [styles.clientsButton, pressed && styles.pressed]}><MaterialIcons name="groups" size={20} color="#FFFFFF" /><Text style={styles.pushButtonText}>Gérer mes clients et colis</Text></Pressable></> : null}{user?.role === "agency_admin" || user?.role === "super_admin" ? <Pressable onPress={() => router.push("/subscription" as never)} style={({ pressed }) => [styles.billingButton, pressed && styles.pressed]}><MaterialIcons name="payments" size={20} color="#062B5C" /><Text style={styles.billingButtonText}>Plan, licences et facturation</Text></Pressable> : null}{user?.role === "agency_admin" ? <Pressable onPress={() => router.push("/team" as never)} style={({ pressed }) => [styles.teamButton, pressed && styles.pressed]}><MaterialIcons name="group" size={20} color="#FFFFFF" /><Text style={styles.pushButtonText}>Gérer l’équipe de l’agence</Text></Pressable> : null}<Pressable disabled={pushStatus === "loading"} onPress={() => void enablePush()} style={({ pressed }) => [styles.pushButton, pressed && styles.pressed, pushStatus === "loading" && styles.disabled]}><MaterialIcons name="notifications-active" size={20} color="#FFFFFF" /><Text style={styles.pushButtonText}>{pushStatus === "ready" ? "Alertes activées" : "Activer les alertes push"}</Text></Pressable><Pressable onPress={() => void refreshRole()} style={({ pressed }) => [styles.claimsButton, pressed && styles.pressed]}><MaterialIcons name="verified-user" size={19} color="#0A2540" /><Text style={styles.claimsButtonText}>Actualiser mes autorisations</Text></Pressable>{message ? <Text style={[styles.message, pushStatus === "error" && styles.messageError]}>{message}</Text> : null}<Pressable onPress={() => { haptic.medium(); void signOut(); }} style={({ pressed }) => [styles.logout, pressed && styles.pressed]}><MaterialIcons name="logout" size={20} color="#C43D3D" /><Text style={styles.logoutText}>Se déconnecter</Text></Pressable><Text style={styles.footerText}>Les alertes push exigent un appareil physique et une build de développement ou de publication ; elles ne sont pas prises en charge par Expo Go Android.</Text></View>}
-  /><ScrollJumpControls onTop={() => listRef.current?.scrollToOffset({ offset: 0, animated: true })} onBottom={() => listRef.current?.scrollToEnd({ animated: true })} /></View></ScreenContainer>;
+  const enablePush = async () => {
+    setPushStatus("loading");
+    setMessage("");
+    try {
+      const firebaseToken = await getFirebaseIdToken(true);
+      if (!firebaseToken) throw new Error("Connectez-vous avant d’activer les alertes.");
+      const expoToken = await requestExpoPushToken();
+      await registerPushTokenWithApi(expoToken, firebaseToken);
+      haptic.success();
+      setPushStatus("ready");
+      setMessageTone("success");
+      setMessage("Ce terminal est enregistré pour recevoir les alertes distantes d’expédition.");
+    } catch (error) {
+      haptic.error();
+      setPushStatus("error");
+      setMessageTone("error");
+      setMessage(error instanceof Error ? error.message : "Activation des alertes impossible.");
+    }
+  };
+
+  const testLocalNotification = async () => {
+    setLocalTestStatus("loading");
+    setMessage("");
+    try {
+      await triggerLocalNotificationTest();
+      haptic.success();
+      setLocalTestStatus("ready");
+      setMessageTone("success");
+      setMessage("Notification locale déclenchée. Vérifiez la bannière ou le centre de notifications du téléphone.");
+    } catch (error) {
+      haptic.error();
+      setLocalTestStatus("error");
+      setMessageTone("error");
+      setMessage(error instanceof Error ? error.message : "Le test de notification locale a échoué.");
+    }
+  };
+
+  const refreshRole = async () => {
+    try {
+      await refreshClaims();
+      haptic.success();
+      setMessageTone("success");
+      setMessage("Les autorisations Firebase ont été actualisées.");
+    } catch {
+      haptic.error();
+      setMessageTone("error");
+      setMessage("Impossible d’actualiser les autorisations.");
+    }
+  };
+
+  return (
+    <ScreenContainer className="bg-background">
+      <View style={[styles.screen, { backgroundColor: colorScheme === "dark" ? "#091725" : "#F3F8FC" }]}>
+        <FlatList
+          ref={listRef}
+          data={ITEMS.filter((item) => !item.role || item.role === user?.role)}
+          keyExtractor={(item) => item.title}
+          contentContainerStyle={[styles.content, styles.contentWithScrollControls]}
+          showsVerticalScrollIndicator
+          ListHeaderComponent={(
+            <View>
+              <Text style={styles.eyebrow}>COMPTE ET APPLICATION</Text>
+              <Text style={styles.title}>Réglages</Text>
+              <View style={[styles.themeControl, { backgroundColor: colorScheme === "dark" ? "#183651" : "#EAF4FD", borderColor: colorScheme === "dark" ? "#315673" : "#B9D9F7" }]}>
+                <View style={styles.themeCopy}>
+                  <Text style={[styles.themeTitle, { color: colorScheme === "dark" ? "#F6FAFF" : "#062B5C" }]}>Mode sombre global</Text>
+                  <Text style={[styles.themeText, { color: colorScheme === "dark" ? "#B6C8D9" : "#65768B" }]}>Appliqué à la navigation et aux espaces administrateur.</Text>
+                </View>
+                <Switch value={colorScheme === "dark"} onValueChange={(value) => setColorScheme(value ? "dark" : "light")} trackColor={{ false: "#9FB4C7", true: "#3E85C6" }} thumbColor={colorScheme === "dark" ? "#F7D116" : "#FFFFFF"} />
+              </View>
+              <View style={styles.profile}>
+                <View style={styles.avatar}><Text style={styles.avatarText}>{(user?.displayName ?? "U").slice(0, 1).toUpperCase()}</Text></View>
+                <View style={styles.profileCopy}>
+                  <Text style={styles.profileName}>{user?.displayName}</Text>
+                  <Text style={styles.profileMeta}>{user?.role} · {user?.agencyId ?? "Périmètre global"}</Text>
+                </View>
+              </View>
+            </View>
+          )}
+          renderItem={({ item }) => item.href ? (
+            <Pressable onPress={() => router.push(item.href as never)} style={({ pressed }) => [styles.item, pressed && styles.pressed]}>
+              <View style={[styles.itemIcon, { backgroundColor: `${item.color}18` }]}><MaterialIcons name={item.icon as never} size={20} color={item.color} /></View>
+              <View style={styles.itemText}><Text style={styles.itemTitle}>{item.title}</Text><Text style={styles.itemDescription}>{item.description}</Text></View>
+              <MaterialIcons name="chevron-right" size={22} color="#718496" />
+            </Pressable>
+          ) : (
+            <View style={styles.item}>
+              <View style={[styles.itemIcon, { backgroundColor: `${item.color}18` }]}><MaterialIcons name={item.icon as never} size={20} color={item.color} /></View>
+              <View style={styles.itemText}><Text style={styles.itemTitle}>{item.title}</Text><Text style={styles.itemDescription}>{item.description}</Text></View>
+            </View>
+          )}
+          ListFooterComponent={(
+            <View style={styles.footer}>
+              <Pressable onPress={() => router.push("/profile" as never)} style={({ pressed }) => [styles.profileButton, pressed && styles.pressed]}>
+                <MaterialIcons name="person" size={20} color="#0A2540" /><Text style={styles.profileButtonText}>Mon profil et mon mot de passe</Text>
+              </Pressable>
+              {user?.role === "super_admin" ? (
+                <>
+                  <Pressable onPress={() => router.push("/agency-directory" as never)} style={({ pressed }) => [styles.agencyButton, pressed && styles.pressed]}><MaterialIcons name="add-business" size={20} color="#FFFFFF" /><Text style={styles.agencyButtonText}>Créer une agence SaaS</Text></Pressable>
+                  <Pressable onPress={() => router.push("/agency-registration-requests" as never)} style={({ pressed }) => [styles.analyticsButton, pressed && styles.pressed]}><MaterialIcons name="fact-check" size={20} color="#FFFFFF" /><Text style={styles.pushButtonText}>Valider les demandes d’agence</Text></Pressable>
+                  <Pressable onPress={() => router.push("/agency-preview" as never)} style={({ pressed }) => [styles.previewButton, pressed && styles.pressed]}><MaterialIcons name="visibility" size={20} color="#062B5C" /><Text style={styles.previewButtonText}>Prévisualiser une agence</Text></Pressable>
+                </>
+              ) : null}
+              {user?.role === "agency_admin" ? (
+                <>
+                  <Pressable onPress={() => router.push("/agency-settings" as never)} style={({ pressed }) => [styles.agencyButton, pressed && styles.pressed]}><MaterialIcons name="storefront" size={20} color="#FFFFFF" /><Text style={styles.agencyButtonText}>Marque et WhatsApp de l’agence</Text></Pressable>
+                  <Pressable onPress={() => router.push("/agency-analytics" as never)} style={({ pressed }) => [styles.analyticsButton, pressed && styles.pressed]}><MaterialIcons name="insights" size={20} color="#FFFFFF" /><Text style={styles.pushButtonText}>Analytique colis et WhatsApp</Text></Pressable>
+                  <Pressable onPress={() => router.push("/agency-clients" as never)} style={({ pressed }) => [styles.clientsButton, pressed && styles.pressed]}><MaterialIcons name="groups" size={20} color="#FFFFFF" /><Text style={styles.pushButtonText}>Gérer mes clients et colis</Text></Pressable>
+                </>
+              ) : null}
+              {user?.role === "agency_admin" || user?.role === "super_admin" ? (
+                <Pressable onPress={() => router.push("/subscription" as never)} style={({ pressed }) => [styles.billingButton, pressed && styles.pressed]}><MaterialIcons name="payments" size={20} color="#062B5C" /><Text style={styles.billingButtonText}>Plan, licences et facturation</Text></Pressable>
+              ) : null}
+              {user?.role === "agency_admin" ? (
+                <Pressable onPress={() => router.push("/team" as never)} style={({ pressed }) => [styles.teamButton, pressed && styles.pressed]}><MaterialIcons name="group" size={20} color="#FFFFFF" /><Text style={styles.pushButtonText}>Gérer l’équipe de l’agence</Text></Pressable>
+              ) : null}
+              <View style={styles.notificationCard}>
+                <View style={styles.notificationHeader}>
+                  <MaterialIcons name="notifications" size={22} color="#003F87" />
+                  <View style={styles.notificationCopy}>
+                    <Text style={styles.notificationTitle}>Diagnostic des notifications</Text>
+                    <Text style={styles.notificationText}>Testez d’abord l’affichage local, puis enregistrez ce téléphone pour les alertes distantes.</Text>
+                  </View>
+                </View>
+                <Pressable disabled={notificationActionPending} onPress={() => void testLocalNotification()} style={({ pressed }) => [styles.localTestButton, pressed && styles.pressed, notificationActionPending && styles.disabled]}>
+                  {localTestStatus === "loading" ? <ActivityIndicator size="small" color="#FFFFFF" /> : <MaterialIcons name="notification-add" size={20} color="#FFFFFF" />}
+                  <Text style={styles.pushButtonText}>{localTestStatus === "loading" ? "Déclenchement du test…" : localTestStatus === "ready" ? "Retester la notification locale" : "Tester une notification locale"}</Text>
+                </Pressable>
+                <Pressable disabled={notificationActionPending} onPress={() => void enablePush()} style={({ pressed }) => [styles.pushButton, pressed && styles.pressed, notificationActionPending && styles.disabled]}>
+                  {pushStatus === "loading" ? <ActivityIndicator size="small" color="#FFFFFF" /> : <MaterialIcons name="notifications-active" size={20} color="#FFFFFF" />}
+                  <Text style={styles.pushButtonText}>{pushStatus === "loading" ? "Enregistrement du terminal…" : pushStatus === "ready" ? "Alertes distantes activées" : "Activer les alertes distantes"}</Text>
+                </Pressable>
+              </View>
+              <Pressable onPress={() => void refreshRole()} style={({ pressed }) => [styles.claimsButton, pressed && styles.pressed]}><MaterialIcons name="verified-user" size={19} color="#0A2540" /><Text style={styles.claimsButtonText}>Actualiser mes autorisations</Text></Pressable>
+              {message ? <Text accessibilityLiveRegion="polite" style={[styles.message, messageTone === "error" && styles.messageError]}>{message}</Text> : null}
+              <Pressable onPress={() => { haptic.medium(); void signOut(); }} style={({ pressed }) => [styles.logout, pressed && styles.pressed]}><MaterialIcons name="logout" size={20} color="#C43D3D" /><Text style={styles.logoutText}>Se déconnecter</Text></Pressable>
+              <Text style={styles.footerText}>Le test local est disponible sur Android et iOS. Les alertes distantes exigent un appareil physique et une build de développement ou de publication ; elles ne fonctionnent pas dans Expo Go Android. Le Web affiche une limitation explicite.</Text>
+            </View>
+          )}
+        />
+        <ScrollJumpControls onTop={() => listRef.current?.scrollToOffset({ offset: 0, animated: true })} onBottom={() => listRef.current?.scrollToEnd({ animated: true })} />
+      </View>
+    </ScreenContainer>
+  );
 }
 
 const styles = StyleSheet.create({
@@ -45,11 +186,13 @@ const styles = StyleSheet.create({
   content: { padding: 20, paddingBottom: 30 },
   contentWithScrollControls: { paddingBottom: 88 },
   themeControl: { alignItems: "center", borderRadius: 13, borderWidth: 1, flexDirection: "row", justifyContent: "space-between", marginTop: 15, padding: 12 },
+  themeCopy: { flex: 1, paddingRight: 12 },
   themeTitle: { fontSize: 13, fontWeight: "900" },
   themeText: { fontSize: 10, marginTop: 3 },
   eyebrow: { color: "#FF6B35", fontSize: 11, fontWeight: "800", letterSpacing: 1 },
   title: { color: "#0A2540", fontSize: 28, fontWeight: "800", marginTop: 5 },
   profile: { alignItems: "center", backgroundColor: "#FFFFFF", borderColor: "#D9E2EC", borderRadius: 18, borderWidth: 1, flexDirection: "row", marginBottom: 18, marginTop: 22, padding: 16 },
+  profileCopy: { flex: 1 },
   avatar: { alignItems: "center", backgroundColor: "#0A2540", borderRadius: 24, height: 48, justifyContent: "center", marginRight: 12, width: 48 },
   avatarText: { color: "#FFFFFF", fontSize: 19, fontWeight: "800" },
   profileName: { color: "#0A2540", fontSize: 16, fontWeight: "800" },
@@ -71,7 +214,13 @@ const styles = StyleSheet.create({
   teamButton: { alignItems: "center", backgroundColor: "#235B9D", borderRadius: 14, flexDirection: "row", height: 52, justifyContent: "center", marginBottom: 10 },
   analyticsButton: { alignItems: "center", backgroundColor: "#6D28D9", borderRadius: 14, flexDirection: "row", height: 52, justifyContent: "center", marginBottom: 10 },
   clientsButton: { alignItems: "center", backgroundColor: "#0F766E", borderRadius: 14, flexDirection: "row", height: 52, justifyContent: "center", marginBottom: 10 },
-  pushButton: { alignItems: "center", backgroundColor: "#FF6B35", borderRadius: 14, flexDirection: "row", height: 52, justifyContent: "center" },
+  notificationCard: { backgroundColor: "#E7F3FF", borderColor: "#B9D9F7", borderRadius: 16, borderWidth: 1, gap: 10, marginTop: 4, padding: 12 },
+  notificationHeader: { alignItems: "center", flexDirection: "row" },
+  notificationCopy: { flex: 1, marginLeft: 10 },
+  notificationTitle: { color: "#003F87", fontSize: 14, fontWeight: "900" },
+  notificationText: { color: "#415F80", fontSize: 11, lineHeight: 16, marginTop: 3 },
+  localTestButton: { alignItems: "center", backgroundColor: "#147A46", borderRadius: 12, flexDirection: "row", height: 48, justifyContent: "center" },
+  pushButton: { alignItems: "center", backgroundColor: "#FF6B35", borderRadius: 12, flexDirection: "row", height: 48, justifyContent: "center" },
   pushButtonText: { color: "#FFFFFF", fontSize: 14, fontWeight: "800", marginLeft: 8 },
   claimsButton: { alignItems: "center", backgroundColor: "#FFFFFF", borderColor: "#D9E2EC", borderRadius: 14, borderWidth: 1, flexDirection: "row", height: 50, justifyContent: "center", marginTop: 10 },
   claimsButtonText: { color: "#0A2540", fontSize: 14, fontWeight: "800", marginLeft: 7 },

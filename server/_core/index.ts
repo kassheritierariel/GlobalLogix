@@ -49,7 +49,7 @@ function isAllowedCorsOrigin(origin: string, host: string | undefined) {
   if (process.env.NODE_ENV !== "production") return true;
   const configured = (process.env.CORS_ALLOWED_ORIGINS ?? process.env.REALTIME_ALLOWED_ORIGINS ?? "")
     .split(",")
-    .map((value) => value.trim())
+    .map((value: string) => value.trim())
     .filter(Boolean);
   if (configured.includes(origin)) return true;
   return Boolean(host && origin === `https://${host}`);

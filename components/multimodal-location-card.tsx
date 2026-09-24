@@ -1,5 +1,5 @@
 import { Linking, Pressable, StyleSheet, Text, View } from "react-native";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { MaterialIcon } from "@/components/material-icon";
 
 import type { Shipment } from "@/lib/types";
 import { getExternalMapUrl, getMultimodalLocationPresentation } from "@/lib/multimodal-location";
@@ -17,9 +17,9 @@ export function MultimodalLocationCard({ shipment }: { shipment: Shipment }) {
   };
 
   return <View style={styles.card}>
-    <View style={styles.header}><View style={styles.icon}><MaterialIcons name={presentation.icon} size={20} color="#235B9D" /></View><View style={styles.headerCopy}><Text style={styles.title}>{presentation.title}</Text><Text style={styles.subtitle}>{presentation.subtitle}</Text></View></View>
+    <View style={styles.header}><View style={styles.icon}><MaterialIcon name={presentation.icon} size={20} color="#235B9D" /></View><View style={styles.headerCopy}><Text style={styles.title}>{presentation.title}</Text><Text style={styles.subtitle}>{presentation.subtitle}</Text></View></View>
     <View style={styles.position}><Text style={styles.label}>{presentation.landmarkLabel}</Text><Text style={styles.value}>{shipment.currentPosition}</Text><Text style={styles.updated}>Télémétrie reçue · {shipment.lastTelemetryAt}</Text></View>
-    <Pressable onPress={() => void openExternalMap()} style={({ pressed }) => [styles.mapButton, pressed && styles.pressed]}><MaterialIcons name="map" size={18} color="#0A2540" /><Text style={styles.mapButtonText}>Voir le contexte cartographique</Text><MaterialIcons name="open-in-new" size={16} color="#235B9D" /></Pressable>
+    <Pressable onPress={() => void openExternalMap()} style={({ pressed }) => [styles.mapButton, pressed && styles.pressed]}><MaterialIcon name="map" size={18} color="#0A2540" /><Text style={styles.mapButtonText}>Voir le contexte cartographique</Text><MaterialIcon name="open-in-new" size={16} color="#235B9D" /></Pressable>
   </View>;
 }
 

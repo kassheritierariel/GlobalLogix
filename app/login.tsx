@@ -87,6 +87,11 @@ export default function LoginScreen() {
           <Text style={styles.noteTitle}>Accès sécurisé</Text>
           <Text style={styles.note}>La connexion utilise Firebase Auth. Les permissions et le périmètre agence proviennent des Custom Claims définis par votre administration.</Text>
         </View>
+        <View style={styles.legalLinks}>
+          <Pressable onPress={() => router.push("/privacy" as never)} style={({ pressed }) => pressed && styles.pressed}><Text style={styles.legalLink}>Confidentialité</Text></Pressable>
+          <Text style={styles.legalSeparator}>·</Text>
+          <Pressable onPress={() => router.push("/account-deletion" as never)} style={({ pressed }) => pressed && styles.pressed}><Text style={styles.legalLink}>Supprimer un compte</Text></Pressable>
+        </View>
       </View>
     </KeyboardAvoidingView>
   );
@@ -118,4 +123,7 @@ const styles = StyleSheet.create({
   noteBox: { backgroundColor: "#E7F3FF", borderRadius: 14, marginTop: 18, padding: 14 },
   noteTitle: { color: "#003F87", fontSize: 13, fontWeight: "800", marginBottom: 4 },
   note: { color: "#5B6D84", fontSize: 12, lineHeight: 18 },
+  legalLinks: { alignItems: "center", flexDirection: "row", justifyContent: "center", marginTop: 14 },
+  legalLink: { color: "#235B9D", fontSize: 11, fontWeight: "800" },
+  legalSeparator: { color: "#91A1B2", marginHorizontal: 8 },
 });

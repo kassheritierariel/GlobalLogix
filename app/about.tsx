@@ -1,4 +1,4 @@
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { MaterialIcon } from "@/components/material-icon";
 import { router } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
@@ -17,7 +17,7 @@ export default function AboutScreen() {
     <ScreenContainer className="bg-background">
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <Pressable onPress={() => router.back()} style={({ pressed }) => [styles.back, pressed && styles.pressed]} accessibilityRole="button" accessibilityLabel="Retour aux réglages">
-          <MaterialIcons name="arrow-back" size={20} color="#062B5C" />
+          <MaterialIcon name="arrow-back" size={20} color="#062B5C" />
           <Text style={styles.backText}>Réglages</Text>
         </Pressable>
 
@@ -37,7 +37,7 @@ export default function AboutScreen() {
         <Text style={styles.sectionLabel}>NOS FONDATIONS</Text>
         {pillars.map((pillar) => (
           <View key={pillar.title} style={styles.pillar}>
-            <View style={styles.pillarIcon}><MaterialIcons name={pillar.icon as never} size={22} color="#007FFF" /></View>
+            <View style={styles.pillarIcon}><MaterialIcon name={pillar.icon as never} size={22} color="#007FFF" /></View>
             <View style={styles.pillarCopy}><Text style={styles.pillarTitle}>{pillar.title}</Text><Text style={styles.pillarText}>{pillar.text}</Text></View>
           </View>
         ))}

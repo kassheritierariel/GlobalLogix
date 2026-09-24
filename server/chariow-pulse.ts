@@ -6,6 +6,7 @@ export type ChariowPulsePayload = {
   event?: string;
   sale?: { id?: string; status?: string; amount?: { value?: number; currency?: string } };
   product?: { id?: string };
+  custom_metadata?: { agency_id?: string; subscription_id?: string; transaction_id?: string; plan_id?: string; billing_cycle?: string };
 };
 
 export function verifyChariowPulseSignature(rawBody: Buffer, receivedSignature: string | undefined, pulseSecret: string | undefined) {

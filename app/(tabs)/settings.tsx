@@ -1,4 +1,4 @@
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { MaterialIcon } from "@/components/material-icon";
 import { router } from "expo-router";
 import { useRef, useState } from "react";
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Switch, Text, View } from "react-native";
@@ -15,6 +15,8 @@ const ITEMS = [
   { icon: "shield", title: "Accès Firebase", description: "Session et autorisations gérées par Custom Claims", color: "#235B9D" },
   { icon: "sync", title: "Télémétrie WebSocket", description: "Canal authentifié avec reconnexion automatique", color: "#147A46" },
   { icon: "dashboard", title: "Console Web centralisatrice", description: "Pilotage des agences, opérations, abonnements et canaux clients", color: "#007FFF", href: "/central-console", role: "super_admin" },
+  { icon: "privacy-tip", title: "Politique de confidentialité", description: "Données traitées, sécurité, prestataires et droits", color: "#235B9D", href: "/privacy" },
+  { icon: "person-remove", title: "Suppression du compte", description: "Supprimer le compte et les données personnelles associées", color: "#CE1126", href: "/account-deletion" },
   { icon: "info-outline", title: "À propos", description: "Notre identité, nos fondations et les plateformes prises en charge", color: "#936200", href: "/about" },
 ];
 
@@ -116,61 +118,61 @@ export default function SettingsScreen() {
           )}
           renderItem={({ item }) => item.href ? (
             <Pressable onPress={() => router.push(item.href as never)} style={({ pressed }) => [styles.item, pressed && styles.pressed]}>
-              <View style={[styles.itemIcon, { backgroundColor: `${item.color}18` }]}><MaterialIcons name={item.icon as never} size={20} color={item.color} /></View>
+              <View style={[styles.itemIcon, { backgroundColor: `${item.color}18` }]}><MaterialIcon name={item.icon as never} size={20} color={item.color} /></View>
               <View style={styles.itemText}><Text style={styles.itemTitle}>{item.title}</Text><Text style={styles.itemDescription}>{item.description}</Text></View>
-              <MaterialIcons name="chevron-right" size={22} color="#718496" />
+              <MaterialIcon name="chevron-right" size={22} color="#718496" />
             </Pressable>
           ) : (
             <View style={styles.item}>
-              <View style={[styles.itemIcon, { backgroundColor: `${item.color}18` }]}><MaterialIcons name={item.icon as never} size={20} color={item.color} /></View>
+              <View style={[styles.itemIcon, { backgroundColor: `${item.color}18` }]}><MaterialIcon name={item.icon as never} size={20} color={item.color} /></View>
               <View style={styles.itemText}><Text style={styles.itemTitle}>{item.title}</Text><Text style={styles.itemDescription}>{item.description}</Text></View>
             </View>
           )}
           ListFooterComponent={(
             <View style={styles.footer}>
               <Pressable onPress={() => router.push("/profile" as never)} style={({ pressed }) => [styles.profileButton, pressed && styles.pressed]}>
-                <MaterialIcons name="person" size={20} color="#0A2540" /><Text style={styles.profileButtonText}>Mon profil et mon mot de passe</Text>
+                <MaterialIcon name="person" size={20} color="#0A2540" /><Text style={styles.profileButtonText}>Mon profil et mon mot de passe</Text>
               </Pressable>
               {user?.role === "super_admin" ? (
                 <>
-                  <Pressable onPress={() => router.push("/agency-directory" as never)} style={({ pressed }) => [styles.agencyButton, pressed && styles.pressed]}><MaterialIcons name="add-business" size={20} color="#FFFFFF" /><Text style={styles.agencyButtonText}>Créer une agence SaaS</Text></Pressable>
-                  <Pressable onPress={() => router.push("/agency-registration-requests" as never)} style={({ pressed }) => [styles.analyticsButton, pressed && styles.pressed]}><MaterialIcons name="fact-check" size={20} color="#FFFFFF" /><Text style={styles.pushButtonText}>Valider les demandes d’agence</Text></Pressable>
-                  <Pressable onPress={() => router.push("/agency-preview" as never)} style={({ pressed }) => [styles.previewButton, pressed && styles.pressed]}><MaterialIcons name="visibility" size={20} color="#062B5C" /><Text style={styles.previewButtonText}>Prévisualiser une agence</Text></Pressable>
+                  <Pressable onPress={() => router.push("/agency-directory" as never)} style={({ pressed }) => [styles.agencyButton, pressed && styles.pressed]}><MaterialIcon name="add-business" size={20} color="#FFFFFF" /><Text style={styles.agencyButtonText}>Créer une agence SaaS</Text></Pressable>
+                  <Pressable onPress={() => router.push("/agency-registration-requests" as never)} style={({ pressed }) => [styles.analyticsButton, pressed && styles.pressed]}><MaterialIcon name="fact-check" size={20} color="#FFFFFF" /><Text style={styles.pushButtonText}>Valider les demandes d’agence</Text></Pressable>
+                  <Pressable onPress={() => router.push("/agency-preview" as never)} style={({ pressed }) => [styles.previewButton, pressed && styles.pressed]}><MaterialIcon name="visibility" size={20} color="#062B5C" /><Text style={styles.previewButtonText}>Prévisualiser une agence</Text></Pressable>
                 </>
               ) : null}
               {user?.role === "agency_admin" ? (
                 <>
-                  <Pressable onPress={() => router.push("/agency-settings" as never)} style={({ pressed }) => [styles.agencyButton, pressed && styles.pressed]}><MaterialIcons name="storefront" size={20} color="#FFFFFF" /><Text style={styles.agencyButtonText}>Marque et WhatsApp de l’agence</Text></Pressable>
-                  <Pressable onPress={() => router.push("/agency-analytics" as never)} style={({ pressed }) => [styles.analyticsButton, pressed && styles.pressed]}><MaterialIcons name="insights" size={20} color="#FFFFFF" /><Text style={styles.pushButtonText}>Analytique colis et WhatsApp</Text></Pressable>
-                  <Pressable onPress={() => router.push("/agency-clients" as never)} style={({ pressed }) => [styles.clientsButton, pressed && styles.pressed]}><MaterialIcons name="groups" size={20} color="#FFFFFF" /><Text style={styles.pushButtonText}>Gérer mes clients et colis</Text></Pressable>
+                  <Pressable onPress={() => router.push("/agency-settings" as never)} style={({ pressed }) => [styles.agencyButton, pressed && styles.pressed]}><MaterialIcon name="storefront" size={20} color="#FFFFFF" /><Text style={styles.agencyButtonText}>Marque et WhatsApp de l’agence</Text></Pressable>
+                  <Pressable onPress={() => router.push("/agency-analytics" as never)} style={({ pressed }) => [styles.analyticsButton, pressed && styles.pressed]}><MaterialIcon name="insights" size={20} color="#FFFFFF" /><Text style={styles.pushButtonText}>Analytique colis et WhatsApp</Text></Pressable>
+                  <Pressable onPress={() => router.push("/agency-clients" as never)} style={({ pressed }) => [styles.clientsButton, pressed && styles.pressed]}><MaterialIcon name="groups" size={20} color="#FFFFFF" /><Text style={styles.pushButtonText}>Gérer mes clients et colis</Text></Pressable>
                 </>
               ) : null}
               {user?.role === "agency_admin" || user?.role === "super_admin" ? (
-                <Pressable onPress={() => router.push("/subscription" as never)} style={({ pressed }) => [styles.billingButton, pressed && styles.pressed]}><MaterialIcons name="payments" size={20} color="#062B5C" /><Text style={styles.billingButtonText}>Plan, licences et facturation</Text></Pressable>
+                <Pressable onPress={() => router.push("/subscription" as never)} style={({ pressed }) => [styles.billingButton, pressed && styles.pressed]}><MaterialIcon name="payments" size={20} color="#062B5C" /><Text style={styles.billingButtonText}>Plan, licences et facturation</Text></Pressable>
               ) : null}
               {user?.role === "agency_admin" ? (
-                <Pressable onPress={() => router.push("/team" as never)} style={({ pressed }) => [styles.teamButton, pressed && styles.pressed]}><MaterialIcons name="group" size={20} color="#FFFFFF" /><Text style={styles.pushButtonText}>Gérer l’équipe de l’agence</Text></Pressable>
+                <Pressable onPress={() => router.push("/team" as never)} style={({ pressed }) => [styles.teamButton, pressed && styles.pressed]}><MaterialIcon name="group" size={20} color="#FFFFFF" /><Text style={styles.pushButtonText}>Gérer l’équipe de l’agence</Text></Pressable>
               ) : null}
               <View style={styles.notificationCard}>
                 <View style={styles.notificationHeader}>
-                  <MaterialIcons name="notifications" size={22} color="#003F87" />
+                  <MaterialIcon name="notifications" size={22} color="#003F87" />
                   <View style={styles.notificationCopy}>
                     <Text style={styles.notificationTitle}>Diagnostic des notifications</Text>
                     <Text style={styles.notificationText}>Testez d’abord l’affichage local, puis enregistrez ce téléphone pour les alertes distantes.</Text>
                   </View>
                 </View>
                 <Pressable disabled={notificationActionPending} onPress={() => void testLocalNotification()} style={({ pressed }) => [styles.localTestButton, pressed && styles.pressed, notificationActionPending && styles.disabled]}>
-                  {localTestStatus === "loading" ? <ActivityIndicator size="small" color="#FFFFFF" /> : <MaterialIcons name="notification-add" size={20} color="#FFFFFF" />}
+                  {localTestStatus === "loading" ? <ActivityIndicator size="small" color="#FFFFFF" /> : <MaterialIcon name="notification-add" size={20} color="#FFFFFF" />}
                   <Text style={styles.pushButtonText}>{localTestStatus === "loading" ? "Déclenchement du test…" : localTestStatus === "ready" ? "Retester la notification locale" : "Tester une notification locale"}</Text>
                 </Pressable>
                 <Pressable disabled={notificationActionPending} onPress={() => void enablePush()} style={({ pressed }) => [styles.pushButton, pressed && styles.pressed, notificationActionPending && styles.disabled]}>
-                  {pushStatus === "loading" ? <ActivityIndicator size="small" color="#FFFFFF" /> : <MaterialIcons name="notifications-active" size={20} color="#FFFFFF" />}
+                  {pushStatus === "loading" ? <ActivityIndicator size="small" color="#FFFFFF" /> : <MaterialIcon name="notifications-active" size={20} color="#FFFFFF" />}
                   <Text style={styles.pushButtonText}>{pushStatus === "loading" ? "Enregistrement du terminal…" : pushStatus === "ready" ? "Alertes distantes activées" : "Activer les alertes distantes"}</Text>
                 </Pressable>
               </View>
-              <Pressable onPress={() => void refreshRole()} style={({ pressed }) => [styles.claimsButton, pressed && styles.pressed]}><MaterialIcons name="verified-user" size={19} color="#0A2540" /><Text style={styles.claimsButtonText}>Actualiser mes autorisations</Text></Pressable>
+              <Pressable onPress={() => void refreshRole()} style={({ pressed }) => [styles.claimsButton, pressed && styles.pressed]}><MaterialIcon name="verified-user" size={19} color="#0A2540" /><Text style={styles.claimsButtonText}>Actualiser mes autorisations</Text></Pressable>
               {message ? <Text accessibilityLiveRegion="polite" style={[styles.message, messageTone === "error" && styles.messageError]}>{message}</Text> : null}
-              <Pressable onPress={() => { haptic.medium(); void signOut(); }} style={({ pressed }) => [styles.logout, pressed && styles.pressed]}><MaterialIcons name="logout" size={20} color="#C43D3D" /><Text style={styles.logoutText}>Se déconnecter</Text></Pressable>
+              <Pressable onPress={() => { haptic.medium(); void signOut(); }} style={({ pressed }) => [styles.logout, pressed && styles.pressed]}><MaterialIcon name="logout" size={20} color="#C43D3D" /><Text style={styles.logoutText}>Se déconnecter</Text></Pressable>
               <Text style={styles.footerText}>Le test local est disponible sur Android et iOS. Les alertes distantes exigent un appareil physique et une build de développement ou de publication ; elles ne fonctionnent pas dans Expo Go Android. Le Web affiche une limitation explicite.</Text>
             </View>
           )}

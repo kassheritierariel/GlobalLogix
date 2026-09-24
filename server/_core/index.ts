@@ -5,8 +5,8 @@ import net from "net";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
-import { createAgencyMember, createInitialAgencyAdmin, listAgencyMembers, normalizeAgencyId, requestFirebasePasswordReset, requestFirebasePasswordResetForUid, setAgencyMemberDisabled, setClientClaims, setGlobalLogixClaims, updateAgencyMemberRole, verifyFirebaseAuthorization, verifyFirebaseIdentity } from "../firebase-admin";
-import { activateAgencyWhatsAppChannel, applySaasPaymentEvent, createAgencyRegistrationRequest, createAgencyWhatsAppLog, createSaasCheckoutIntent, createShipmentShareLink, decideAgencyRegistrationRequest, getAgencyAnalytics, getAgencyClientDetail, getAgencyProfile, getAgencyProfileByPublicSlug, getAgencyRegistrationRequest, getAgencySubscription, getAgencyWhatsAppConfig, getAgencyWhatsAppConfigSummary, getCentralConsoleAnalytics, getClientShipment, getLatestAgencyWhatsAppActivity, getSharedShipment, getShipment, listAgencyClients, listAgencyProfiles, listAgencyRegistrationRequests, listAgencySaasTransactions, listAgencyWhatsAppLogs, listClientShipments, listExceptions, listShipmentEvents, listShipments, markAgencyWhatsAppMetaValidated, markSaasCheckoutAwaitingPayment, recordShipmentEvent, registerClientShipment, registerPushToken, transitionException, updateShipmentCustomerPhone, upsertAgencyProfile, upsertAgencyWhatsAppConfig, upsertClientAccount } from "../db";
+import { createAgencyMember, createInitialAgencyAdmin, deleteFirebaseUser, listAgencyMembers, normalizeAgencyId, requestFirebasePasswordReset, requestFirebasePasswordResetForUid, setAgencyMemberDisabled, setClientClaims, setGlobalLogixClaims, updateAgencyMemberRole, verifyFirebaseAccountPrincipal, verifyFirebaseAuthorization, verifyFirebaseIdentity } from "../firebase-admin";
+import { activateAgencyWhatsAppChannel, anonymizeEndUserAccountData, applySaasPaymentEvent, completeEndUserAccountDeletion, createAccountDeletionRequest, createAgencyRegistrationRequest, createAgencyWhatsAppLog, createSaasCheckoutIntent, createShipmentShareLink, decideAgencyRegistrationRequest, getAgencyAnalytics, getAgencyClientDetail, getAgencyProfile, getAgencyProfileByPublicSlug, getAgencyRegistrationRequest, getAgencySubscription, getAgencyWhatsAppConfig, getAgencyWhatsAppConfigSummary, getCentralConsoleAnalytics, getClientShipment, getLatestAgencyWhatsAppActivity, getSharedShipment, getShipment, listAgencyClients, listAgencyProfiles, listAgencyRegistrationRequests, listAgencySaasTransactions, listAgencyWhatsAppLogs, listClientShipments, listExceptions, listShipmentEvents, listShipments, markAgencyWhatsAppMetaValidated, markSaasCheckoutAwaitingPayment, recordShipmentEvent, registerClientShipment, registerPushToken, transitionException, updateShipmentCustomerPhone, upsertAgencyProfile, upsertAgencyWhatsAppConfig, upsertClientAccount } from "../db";
 import { assertChariowCheckoutConfiguration, createChariowCheckout } from "../chariow-api";
 import { amountToMinorUnits, mapChariowPulseStatus, verifyChariowPulseSignature, type ChariowPulsePayload } from "../chariow-pulse";
 import { getSaaSPlan, SaaSPlanIds, BillingCycles, type BillingCycle, type SaaSPlanId } from "../../lib/saas-plans";
@@ -45,16 +45,31 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
   throw new Error(`No available port found starting from ${startPort}`);
 }
 
+function isAllowedCorsOrigin(origin: string, host: string | undefined) {
+  if (process.env.NODE_ENV !== "production") return true;
+  const configured = (process.env.CORS_ALLOWED_ORIGINS ?? process.env.REALTIME_ALLOWED_ORIGINS ?? "")
+    .split(",")
+    .map((value) => value.trim())
+    .filter(Boolean);
+  if (configured.includes(origin)) return true;
+  return Boolean(host && origin === `https://${host}`);
+}
+
 async function startServer() {
   const app = express();
   const server = createServer(app);
   registerRealtimeServer(server);
 
-  // Enable CORS for all routes - reflect the request origin to support credentials
+  // Les clients natifs n’envoient pas Origin. Le Web publié utilise la même origine.
   app.use((req, res, next) => {
     const origin = req.headers.origin;
     if (origin) {
+      if (!isAllowedCorsOrigin(origin, req.headers.host)) {
+        res.status(403).json({ error: "Origine non autorisée" });
+        return;
+      }
       res.header("Access-Control-Allow-Origin", origin);
+      res.header("Vary", "Origin");
     }
     res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
     res.header(
@@ -79,6 +94,33 @@ async function startServer() {
 
   app.get("/api/health", (_req, res) => {
     res.json({ ok: true, timestamp: Date.now() });
+  });
+
+  app.delete("/api/account", async (req, res) => {
+    try {
+      const principal = await verifyFirebaseAccountPrincipal(req.headers.authorization);
+      const { request, deduplicated } = await createAccountDeletionRequest({
+        firebaseUid: principal.uid,
+        requesterEmail: principal.email,
+        requesterRole: principal.role,
+      });
+      if (principal.role === "super_admin" || principal.role === "agency_admin") {
+        if (!deduplicated) {
+          await notifyOwner({
+            title: "Demande de suppression GlobalLogix",
+            content: `Demande ${request.id} pour un compte ${principal.role}. Une revue est nécessaire avant suppression des données d’agence.`,
+          }).catch(() => console.warn("[Account deletion] Notification propriétaire indisponible"));
+        }
+        res.status(202).json({ requestId: request.id, status: "pending", requiresReview: true });
+        return;
+      }
+      await anonymizeEndUserAccountData(principal.uid);
+      await deleteFirebaseUser(principal.uid);
+      await completeEndUserAccountDeletion(request.id, principal.uid);
+      res.status(200).json({ requestId: request.id, status: "completed", requiresReview: false });
+    } catch (error) {
+      res.status(400).json({ error: error instanceof Error ? error.message : "Suppression du compte impossible" });
+    }
   });
 
   app.post("/api/agency-registration-request", async (req, res) => {
@@ -284,7 +326,13 @@ async function startServer() {
         providerEventId: deliveryId,
         saleId,
         status,
-        currency: payload.sale?.amount?.currency ?? null,
+        productId: payload.product?.id ?? null,
+        agencyId: payload.custom_metadata?.agency_id ?? null,
+        subscriptionId: payload.custom_metadata?.subscription_id ?? null,
+        transactionId: payload.custom_metadata?.transaction_id ?? null,
+        planId: payload.custom_metadata?.plan_id ?? null,
+        billingCycle: payload.custom_metadata?.billing_cycle ?? null,
+        currency: payload.sale?.amount?.currency?.toUpperCase() ?? null,
         amountMinor: amountToMinorUnits(payload.sale?.amount?.value),
       });
       res.status(200).json({ ok: true, ...result });

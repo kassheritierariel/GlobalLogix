@@ -9,16 +9,27 @@ const describeFirebasePreproduction = process.env.RUN_FIREBASE_PREPROD_TESTS ===
 describe("préparation Android notifications", () => {
   it("conserve le profil APK de production", () => {
     const eas = JSON.parse(readFileSync("eas.json", "utf8")) as {
-      build?: { "production-apk"?: { android?: { buildType?: string }; environment?: string } };
+      build?: {
+        production?: { android?: { buildType?: string }; environment?: string; autoIncrement?: boolean };
+        "production-apk"?: { android?: { buildType?: string }; environment?: string };
+      };
+      submit?: { production?: { android?: { track?: string; releaseStatus?: string } } };
     };
     expect(eas.build?.["production-apk"]?.android?.buildType).toBe("apk");
     expect(eas.build?.["production-apk"]?.environment).toBe("production");
+    expect(eas.build?.production?.android?.buildType).toBe("app-bundle");
+    expect(eas.build?.production?.environment).toBe("production");
+    expect(eas.build?.production?.autoIncrement).toBe(true);
+    expect(eas.submit?.production?.android).toEqual({ track: "internal", releaseStatus: "draft" });
   });
 
   it("déclare le plugin Expo Notifications et la permission Android", () => {
     const config = readFileSync("app.config.ts", "utf8");
     expect(config).toContain('"expo-notifications"');
     expect(config).toContain('"POST_NOTIFICATIONS"');
+    expect(config).toContain("compileSdkVersion: 36");
+    expect(config).toContain("targetSdkVersion: 36");
+    expect(config).not.toContain('"expo-audio"');
     expect(config).toContain("process.env.GOOGLE_SERVICES_JSON?.trim()");
     expect(config).toContain("existsSync(googleServicesSecretPath)");
     expect(config).toContain("googleServicesFile,");

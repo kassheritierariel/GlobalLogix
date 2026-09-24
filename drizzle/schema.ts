@@ -39,6 +39,20 @@ export const mobilePushTokens = mysqlTable("mobilePushTokens", {
   index("mobilePushTokens_uid_idx").on(table.firebaseUid),
 ]);
 
+/** Demandes de suppression conformément aux exigences Google Play, sans conserver l’identité après exécution. */
+export const accountDeletionRequests = mysqlTable("accountDeletionRequests", {
+  id: varchar("id", { length: 64 }).primaryKey(),
+  firebaseUid: varchar("firebaseUid", { length: 128 }).notNull(),
+  requesterEmail: varchar("requesterEmail", { length: 320 }),
+  requesterRole: varchar("requesterRole", { length: 32 }).notNull(),
+  status: mysqlEnum("status", ["pending", "completed", "rejected"]).notNull().default("pending"),
+  requestedAt: timestamp("requestedAt").defaultNow().notNull(),
+  completedAt: timestamp("completedAt"),
+}, (table) => [
+  index("accountDeletionRequests_uid_status_idx").on(table.firebaseUid, table.status),
+  index("accountDeletionRequests_status_requested_idx").on(table.status, table.requestedAt),
+]);
+
 /** Un compte client Firebase est identifié par un unique numéro WhatsApp vérifié par SMS. */
 export const clientAccounts = mysqlTable("clientAccounts", {
   firebaseUid: varchar("firebaseUid", { length: 128 }).primaryKey(),

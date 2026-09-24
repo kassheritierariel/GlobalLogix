@@ -214,3 +214,18 @@
 - [x] Diagnostiquer le cycle Publish/EAS qui ne matérialisait pas le secret fichier avant Expo Prebuild
 - [x] Fournir `google-services.json` par un hook EAS compatible avec une archive sans secret suivi par Git
 - [x] Simuler l’archive EAS et vérifier la matérialisation puis la résolution Expo sans divulguer le fichier
+- [x] Éliminer le chargement Web MaterialIcons qui provoquait le délai FontFaceObserver
+- [x] Ajouter le profil AAB Google Play, le versionnage EAS distant et Android API 36
+- [x] Bloquer les permissions caméra, microphone, stockage historique et superposition inutiles
+- [x] Remplacer la télémétrie serveur de démonstration par la persistance DB et le RBAC WebSocket
+- [x] Empêcher les données d’expédition fictives d’apparaître en production
+- [x] Valider produit, montant, devise et métadonnées avant activation Chariow
+- [x] Publier une politique de confidentialité et un parcours de suppression de compte Web/mobile
+- [x] Préparer l’icône, la bannière, les captures et les textes de fiche Google Play
+- [x] Vérifier la configuration native par Expo Prebuild, Expo Doctor, tests et build Web
+- [ ] Créer et vérifier le compte développeur Google Play Console
+- [ ] Générer la première build AAB EAS production avec le secret Firebase fichier
+- [ ] Téléverser l’AAB en piste interne brouillon et exécuter le rapport de pré-lancement
+- [ ] Fournir à Google un compte de revue dédié sans données client réelles
+- [ ] Compléter et valider les déclarations Data safety et contenu de l’application dans Play Console
+- [ ] Passer le test fermé si Google l’exige, puis soumettre la version à la revue de production

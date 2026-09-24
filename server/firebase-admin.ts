@@ -96,6 +96,10 @@ export async function setClientClaims(uid: string) {
   return setGlobalLogixClaims({ uid, role: "client", agencyId: null, disabled: false });
 }
 
+export async function deleteFirebaseUser(uid: string) {
+  await getAdminAuth().deleteUser(uid);
+}
+
 export async function createInitialSuperAdmin(email: string) {
   const normalizedEmail = email.trim().toLowerCase();
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
@@ -283,7 +287,7 @@ export async function setFirebaseUserPassword(input: { email: string; password: 
   return { uid: user.uid, email: normalizedEmail, passwordUpdated: true };
 }
 
-export async function verifyFirebaseAuthorization(value: string | undefined): Promise<FirebasePrincipal> {
+export async function verifyFirebaseAccountPrincipal(value: string | undefined): Promise<FirebasePrincipal> {
   if (!value?.startsWith("Bearer ")) throw new Error("Jeton Firebase manquant");
   const token = value.slice("Bearer ".length).trim();
   const decoded = await getAdminAuth().verifyIdToken(token, true);
@@ -296,7 +300,6 @@ export async function verifyFirebaseAuthorization(value: string | undefined): Pr
   const disabled = decoded.disabled === true;
   if (disabled) throw new Error("Compte désactivé");
   if (role === "client" && !phoneNumber) throw new Error("Numéro SMS Firebase manquant");
-  if (role !== "super_admin" && role !== "client" && !agencyId) throw new Error("Claim agencyId manquant");
 
   return {
     uid: decoded.uid,
@@ -307,6 +310,12 @@ export async function verifyFirebaseAuthorization(value: string | undefined): Pr
     phoneNumber,
     disabled,
   };
+}
+
+export async function verifyFirebaseAuthorization(value: string | undefined): Promise<FirebasePrincipal> {
+  const principal = await verifyFirebaseAccountPrincipal(value);
+  if (principal.role !== "super_admin" && principal.role !== "client" && !principal.agencyId) throw new Error("Claim agencyId manquant");
+  return principal;
 }
 
 export async function verifyFirebaseIdentity(value: string | undefined): Promise<FirebaseIdentity> {

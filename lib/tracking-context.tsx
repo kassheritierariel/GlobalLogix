@@ -23,6 +23,7 @@ type TrackingContextValue = {
 };
 
 const TrackingContext = createContext<TrackingContextValue | undefined>(undefined);
+const INITIAL_SHIPMENTS = process.env.NODE_ENV === "production" ? [] : DEMO_SHIPMENTS;
 
 const formatEventTime = () => new Date().toLocaleTimeString("fr-FR", {
   hour: "2-digit",
@@ -32,13 +33,13 @@ const formatEventTime = () => new Date().toLocaleTimeString("fr-FR", {
 
 export function TrackingProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
-  const [shipments, setShipments] = useState<Shipment[]>(DEMO_SHIPMENTS);
-  const [selectedShipmentId, setSelectedShipmentId] = useState(DEMO_SHIPMENTS[0].id);
+  const [shipments, setShipments] = useState<Shipment[]>(INITIAL_SHIPMENTS);
+  const [selectedShipmentId, setSelectedShipmentId] = useState(INITIAL_SHIPMENTS[0]?.id ?? "");
   const [connectionState, setConnectionState] = useState<TrackingContextValue["connectionState"]>("disconnected");
   const [lastEventAt, setLastEventAt] = useState("En attente du premier événement");
   const [simulationEvents, setSimulationEvents] = useState<Record<string, DetailedTransitEvent[]>>({});
   const socketRef = useRef<WebSocket | null>(null);
-  const shipmentsRef = useRef<Shipment[]>(DEMO_SHIPMENTS);
+  const shipmentsRef = useRef<Shipment[]>(INITIAL_SHIPMENTS);
   const reconnectTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const reconnectAttempt = useRef(0);
 
@@ -51,13 +52,17 @@ export function TrackingProvider({ children }: { children: ReactNode }) {
       if (!user || !hasLogisticsApi()) return;
       try {
         const next = await fetchShipments();
-        if (next.length) {
-          setShipments(next);
-          setSelectedShipmentId((selected) => next.some((shipment) => shipment.id === selected) ? selected : next[0].id);
-          setLastEventAt("Synchronisé avec la base logistique");
-        }
+        setShipments(next);
+        setSelectedShipmentId((selected) => next.some((shipment) => shipment.id === selected) ? selected : next[0]?.id ?? "");
+        setLastEventAt(next.length ? "Synchronisé avec la base logistique" : "Aucune expédition dans votre périmètre");
       } catch {
-        setLastEventAt("Mode hors ligne : données locales affichées");
+        if (process.env.NODE_ENV === "production") {
+          setShipments([]);
+          setSelectedShipmentId("");
+          setLastEventAt("Synchronisation indisponible. Aucune donnée fictive n’est affichée.");
+        } else {
+          setLastEventAt("Mode développement : données de démonstration locales");
+        }
       }
     };
     void loadRealShipments();
@@ -108,8 +113,8 @@ export function TrackingProvider({ children }: { children: ReactNode }) {
   }, [user?.uid]);
 
   const resetLive = () => {
-    setShipments(DEMO_SHIPMENTS);
-    setSelectedShipmentId(DEMO_SHIPMENTS[0].id);
+    setShipments(INITIAL_SHIPMENTS);
+    setSelectedShipmentId(INITIAL_SHIPMENTS[0]?.id ?? "");
     setSimulationEvents({});
   };
 

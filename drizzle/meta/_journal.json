@@ -71,6 +71,13 @@
       "when": 1788793085257,
       "tag": "0009_panoramic_vulture",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "5",
+      "when": 1790234234630,
+      "tag": "0010_stale_venus",
+      "breakpoints": true
     }
   ]
 }

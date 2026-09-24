@@ -74,8 +74,16 @@ const config: ExpoConfig = {
     edgeToEdgeEnabled: true,
     predictiveBackGestureEnabled: false,
     package: env.androidPackage,
+    versionCode: 1,
     googleServicesFile,
     permissions: ["POST_NOTIFICATIONS"],
+    blockedPermissions: [
+      "android.permission.CAMERA",
+      "android.permission.READ_EXTERNAL_STORAGE",
+      "android.permission.RECORD_AUDIO",
+      "android.permission.SYSTEM_ALERT_WINDOW",
+      "android.permission.WRITE_EXTERNAL_STORAGE",
+    ],
     intentFilters: [
       {
         action: "VIEW",
@@ -104,16 +112,12 @@ const config: ExpoConfig = {
       "expo-image-picker",
       {
         photosPermission: "Autoriser $(PRODUCT_NAME) à sélectionner le logo de votre agence.",
+        cameraPermission: false,
+        microphonePermission: false,
       },
     ],
     "@react-native-firebase/app",
     "@react-native-firebase/auth",
-    [
-      "expo-audio",
-      {
-        microphonePermission: "Allow $(PRODUCT_NAME) to access your microphone.",
-      },
-    ],
     [
       "expo-video",
       {
@@ -147,6 +151,9 @@ const config: ExpoConfig = {
         android: {
           buildArchs: ["armeabi-v7a", "arm64-v8a"],
           minSdkVersion: 24,
+          compileSdkVersion: 36,
+          targetSdkVersion: 36,
+          buildToolsVersion: "36.0.0",
         },
       },
     ],

@@ -1,10 +1,10 @@
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { MaterialIcon } from "@/components/material-icon";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 export function ScrollJumpControls({ onTop, onBottom, dark = false }: { onTop: () => void; onBottom: () => void; dark?: boolean }) {
   return <View pointerEvents="box-none" style={styles.wrap}>
-    <Pressable accessibilityRole="button" accessibilityLabel="Revenir en haut de la page" onPress={onTop} style={({ pressed }) => [styles.button, dark && styles.buttonDark, pressed && styles.pressed]}><MaterialIcons name="keyboard-arrow-up" size={22} color={dark ? "#FFFFFF" : "#062B5C"} /><Text style={[styles.label, dark && styles.labelDark]}>Haut</Text></Pressable>
-    <Pressable accessibilityRole="button" accessibilityLabel="Aller en bas de la page" onPress={onBottom} style={({ pressed }) => [styles.button, dark && styles.buttonDark, pressed && styles.pressed]}><Text style={[styles.label, dark && styles.labelDark]}>Bas</Text><MaterialIcons name="keyboard-arrow-down" size={22} color={dark ? "#FFFFFF" : "#062B5C"} /></Pressable>
+    <Pressable accessibilityRole="button" accessibilityLabel="Revenir en haut de la page" onPress={onTop} style={({ pressed }) => [styles.button, dark && styles.buttonDark, pressed && styles.pressed]}><MaterialIcon name="keyboard-arrow-up" size={22} color={dark ? "#FFFFFF" : "#062B5C"} /><Text style={[styles.label, dark && styles.labelDark]}>Haut</Text></Pressable>
+    <Pressable accessibilityRole="button" accessibilityLabel="Aller en bas de la page" onPress={onBottom} style={({ pressed }) => [styles.button, dark && styles.buttonDark, pressed && styles.pressed]}><Text style={[styles.label, dark && styles.labelDark]}>Bas</Text><MaterialIcon name="keyboard-arrow-down" size={22} color={dark ? "#FFFFFF" : "#062B5C"} /></Pressable>
   </View>;
 }
 

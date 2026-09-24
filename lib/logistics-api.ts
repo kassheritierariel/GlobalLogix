@@ -215,6 +215,11 @@ export async function fetchShipments() {
   return body.shipments.map(mapShipment);
 }
 
+export async function requestAccountDeletion() {
+  const response = await authorizedFetch("/api/account", { method: "DELETE" });
+  return response.json() as Promise<{ requestId: string; status: "pending" | "completed"; requiresReview: boolean }>;
+}
+
 export type ShipmentTimelineEvent = {
   id: string;
   type: string;

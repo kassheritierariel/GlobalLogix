@@ -1,5 +1,5 @@
 import { Alert, Pressable, Share, StyleSheet, Text, View } from "react-native";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { MaterialIcon } from "@/components/material-icon";
 import { useState } from "react";
 
 import { ClientPhoneLink } from "@/components/client-phone-link";
@@ -29,7 +29,7 @@ export function ShareShipmentButton({ shipmentId, trackingNumber, onLinkReady }:
       setSharing(false);
     }
   };
-  return <View><Pressable disabled={sharing} onPress={() => void shareTracking()} style={({ pressed }) => [styles.button, pressed && styles.pressed, sharing && styles.disabled]}><MaterialIcons name="ios-share" size={17} color="#062B5C" /><Text style={styles.text}>{sharing ? "Création…" : "Partager le suivi"}</Text></Pressable>{user && user.role !== "viewer" && user.role !== "client" ? <ClientPhoneLink shipmentId={shipmentId} /> : null}</View>;
+  return <View><Pressable disabled={sharing} onPress={() => void shareTracking()} style={({ pressed }) => [styles.button, pressed && styles.pressed, sharing && styles.disabled]}><MaterialIcon name="ios-share" size={17} color="#062B5C" /><Text style={styles.text}>{sharing ? "Création…" : "Partager le suivi"}</Text></Pressable>{user && user.role !== "viewer" && user.role !== "client" ? <ClientPhoneLink shipmentId={shipmentId} /> : null}</View>;
 }
 
 const styles = StyleSheet.create({

@@ -1,4 +1,4 @@
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { MaterialIcon } from "@/components/material-icon";
 import { useState } from "react";
 import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
@@ -26,7 +26,7 @@ export function ClientPhoneLink({ shipmentId }: { shipmentId: string }) {
     }
   };
 
-  return <View style={styles.card}><View style={styles.head}><View style={styles.icon}><MaterialIcons name="phone-android" size={18} color="#007FFF" /></View><View style={styles.copy}><Text style={styles.title}>Rattacher le client SMS</Text><Text style={styles.subtitle}>Le client pourra enregistrer ce colis après vérification du même numéro WhatsApp.</Text></View></View><TextInput value={phoneNumber} onChangeText={setPhoneNumber} placeholder="+243 812 345 678" keyboardType="phone-pad" style={styles.input} returnKeyType="done" onSubmitEditing={() => void save()} /><Pressable disabled={saving} onPress={() => void save()} style={({ pressed }) => [styles.button, saving && styles.disabled, pressed && styles.pressed]}>{saving ? <ActivityIndicator color="#062B5C" /> : <Text style={styles.buttonText}>Associer ce numéro</Text>}</Pressable>{notice ? <Text style={styles.notice}>{notice}</Text> : null}{error ? <Text accessibilityRole="alert" style={styles.error}>{error}</Text> : null}</View>;
+  return <View style={styles.card}><View style={styles.head}><View style={styles.icon}><MaterialIcon name="phone-android" size={18} color="#007FFF" /></View><View style={styles.copy}><Text style={styles.title}>Rattacher le client SMS</Text><Text style={styles.subtitle}>Le client pourra enregistrer ce colis après vérification du même numéro WhatsApp.</Text></View></View><TextInput value={phoneNumber} onChangeText={setPhoneNumber} placeholder="+243 812 345 678" keyboardType="phone-pad" style={styles.input} returnKeyType="done" onSubmitEditing={() => void save()} /><Pressable disabled={saving} onPress={() => void save()} style={({ pressed }) => [styles.button, saving && styles.disabled, pressed && styles.pressed]}>{saving ? <ActivityIndicator color="#062B5C" /> : <Text style={styles.buttonText}>Associer ce numéro</Text>}</Pressable>{notice ? <Text style={styles.notice}>{notice}</Text> : null}{error ? <Text accessibilityRole="alert" style={styles.error}>{error}</Text> : null}</View>;
 }
 
 const styles = StyleSheet.create({

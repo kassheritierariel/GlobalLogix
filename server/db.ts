@@ -1,7 +1,7 @@
-import { and, asc, desc, eq, gt, isNull } from "drizzle-orm";
+import { and, asc, desc, eq, gt, inArray, isNull } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { createHash, randomBytes, randomUUID } from "node:crypto";
-import { agencyProfiles, agencyRegistrationRequests, agencySubscriptions, agencyWhatsAppConfigs, agencyWhatsAppMessageLogs, clientAccounts, clientShipmentLinks, exceptionCases, InsertUser, mobilePushTokens, saasTransactions, shipmentEvents, shipments, shipmentShareLinks, users } from "../drizzle/schema";
+import { accountDeletionRequests, agencyProfiles, agencyRegistrationRequests, agencySubscriptions, agencyWhatsAppConfigs, agencyWhatsAppMessageLogs, clientAccounts, clientShipmentLinks, exceptionCases, InsertUser, mobilePushTokens, saasTransactions, shipmentEvents, shipments, shipmentShareLinks, users } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 import { createExceptionFromEvent } from "./logistics-rules";
 import { normalizeWhatsAppNumber } from "../lib/whatsapp-number";
@@ -159,6 +159,63 @@ export async function getShipment(shipmentId: string, agencyId: string | null) {
   const conditions = agencyId ? and(eq(shipments.id, shipmentId), eq(shipments.agencyId, agencyId)) : eq(shipments.id, shipmentId);
   const rows = await db.select().from(shipments).where(conditions).limit(1);
   return rows[0];
+}
+
+export async function createAccountDeletionRequest(input: { firebaseUid: string; requesterEmail: string | null; requesterRole: string }) {
+  const db = await getDb();
+  if (!db) throw new Error("Base de données indisponible pour la suppression du compte");
+  const existing = await db.select().from(accountDeletionRequests).where(and(
+    eq(accountDeletionRequests.firebaseUid, input.firebaseUid),
+    eq(accountDeletionRequests.status, "pending"),
+  )).limit(1);
+  if (existing[0]) return { request: existing[0], deduplicated: true };
+  const request = {
+    id: randomUUID(),
+    firebaseUid: input.firebaseUid,
+    requesterEmail: input.requesterEmail,
+    requesterRole: input.requesterRole,
+    status: "pending" as const,
+  };
+  await db.insert(accountDeletionRequests).values(request);
+  return { request: { ...request, requestedAt: new Date(), completedAt: null }, deduplicated: false };
+}
+
+/** Supprime les données d’accès personnel, tout en conservant les dossiers logistiques anonymisés. */
+export async function anonymizeEndUserAccountData(firebaseUid: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Base de données indisponible pour la suppression du compte");
+  const anonymizedUid = `deleted:${createHash("sha256").update(firebaseUid).digest("hex").slice(0, 48)}`;
+  await db.transaction(async (tx) => {
+    const linked = await tx.select({ shipmentId: clientShipmentLinks.shipmentId })
+      .from(clientShipmentLinks)
+      .where(eq(clientShipmentLinks.firebaseUid, firebaseUid));
+    const shipmentIds = linked.map(({ shipmentId }) => shipmentId);
+    if (shipmentIds.length) {
+      await tx.update(shipments).set({ customerName: "Client supprimé", customerEmail: null, customerPhone: null })
+        .where(inArray(shipments.id, shipmentIds));
+    }
+    await tx.delete(agencyWhatsAppMessageLogs).where(eq(agencyWhatsAppMessageLogs.clientFirebaseUid, firebaseUid));
+    await tx.delete(clientShipmentLinks).where(eq(clientShipmentLinks.firebaseUid, firebaseUid));
+    await tx.delete(clientAccounts).where(eq(clientAccounts.firebaseUid, firebaseUid));
+    await tx.delete(mobilePushTokens).where(eq(mobilePushTokens.firebaseUid, firebaseUid));
+    await tx.delete(users).where(eq(users.openId, firebaseUid));
+    await tx.delete(agencyRegistrationRequests).where(eq(agencyRegistrationRequests.requesterFirebaseUid, firebaseUid));
+    await tx.update(exceptionCases).set({ assignedTo: null }).where(eq(exceptionCases.assignedTo, firebaseUid));
+    await tx.update(shipmentShareLinks).set({ createdBy: anonymizedUid }).where(eq(shipmentShareLinks.createdBy, firebaseUid));
+  });
+}
+
+export async function completeEndUserAccountDeletion(requestId: string, firebaseUid: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Base de données indisponible pour clôturer la suppression du compte");
+  const anonymizedUid = `deleted:${createHash("sha256").update(firebaseUid).digest("hex").slice(0, 48)}`;
+  await db.update(accountDeletionRequests).set({
+    firebaseUid: anonymizedUid,
+    requesterEmail: null,
+    status: "completed",
+    completedAt: new Date(),
+  }).where(and(eq(accountDeletionRequests.id, requestId), eq(accountDeletionRequests.firebaseUid, firebaseUid)));
+  return { requestId, status: "completed" as const };
 }
 
 export async function upsertClientAccount(input: { firebaseUid: string; phoneNumber: string; displayName?: string | null }) {
@@ -797,6 +854,12 @@ export async function markSaasCheckoutAwaitingPayment(input: { transactionId: st
 export async function applySaasPaymentEvent(input: {
   providerEventId: string;
   saleId: string;
+  productId?: string | null;
+  agencyId?: string | null;
+  subscriptionId?: string | null;
+  transactionId?: string | null;
+  planId?: string | null;
+  billingCycle?: string | null;
   transactionProviderId?: string | null;
   status: SaaSTransactionStatus;
   currency?: string | null;
@@ -810,6 +873,18 @@ export async function applySaasPaymentEvent(input: {
   const rows = await db.select().from(saasTransactions).where(eq(saasTransactions.providerSaleId, input.saleId)).limit(1);
   const transaction = rows[0];
   if (!transaction) return { applied: false as const, reason: "unknown_sale" as const };
+  if (input.status === "paid") {
+    if (!input.productId || input.productId !== transaction.productId) return { applied: false as const, reason: "product_mismatch" as const };
+    if (!input.amountMinor || input.amountMinor <= 0) return { applied: false as const, reason: "invalid_amount" as const };
+    if (!input.currency || !/^[A-Z]{3}$/.test(input.currency.toUpperCase())) return { applied: false as const, reason: "invalid_currency" as const };
+    if (input.agencyId && input.agencyId !== transaction.agencyId) return { applied: false as const, reason: "agency_mismatch" as const };
+    if (input.subscriptionId && input.subscriptionId !== transaction.subscriptionId) return { applied: false as const, reason: "subscription_mismatch" as const };
+    if (input.transactionId && input.transactionId !== transaction.id) return { applied: false as const, reason: "transaction_mismatch" as const };
+    if (input.planId && input.planId !== transaction.planId) return { applied: false as const, reason: "plan_mismatch" as const };
+    if (input.billingCycle && input.billingCycle !== transaction.billingCycle) return { applied: false as const, reason: "billing_cycle_mismatch" as const };
+    if (transaction.amountMinor !== null && transaction.amountMinor !== input.amountMinor) return { applied: false as const, reason: "amount_mismatch" as const };
+    if (transaction.currency && transaction.currency.toUpperCase() !== input.currency.toUpperCase()) return { applied: false as const, reason: "currency_mismatch" as const };
+  }
 
   await db.transaction(async (tx) => {
     await tx.update(saasTransactions).set({

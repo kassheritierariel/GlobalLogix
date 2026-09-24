@@ -1,4 +1,4 @@
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { MaterialIcon } from "@/components/material-icon";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 
@@ -31,7 +31,7 @@ export function ShipmentTimeline({ shipmentId }: { shipmentId: string }) {
       {state === "loading" ? <ActivityIndicator color="#FF6B35" style={styles.loader} /> : null}
       {state === "unavailable" ? <Text style={styles.empty}>Le journal réel apparaîtra dès que l’API logistique sera accessible.</Text> : null}
       {state === "ready" && events.length === 0 ? <Text style={styles.empty}>Aucun événement enregistré pour cette expédition.</Text> : null}
-      {events.slice(0, 5).map((event) => <View key={event.id} style={styles.eventRow}><View style={[styles.eventIcon, event.severity === "critical" && styles.eventCritical, event.severity === "warning" && styles.eventWarning]}><MaterialIcons name={event.type === "customs_hold" ? "gavel" : event.type === "delay_detected" ? "warning-amber" : "my-location"} size={16} color="#FFFFFF" /></View><View style={styles.eventBody}><Text style={styles.eventMessage}>{event.message}</Text><Text style={styles.eventMeta}>{event.source} · {new Date(event.occurredAt).toLocaleString("fr-FR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}</Text></View></View>)}
+      {events.slice(0, 5).map((event) => <View key={event.id} style={styles.eventRow}><View style={[styles.eventIcon, event.severity === "critical" && styles.eventCritical, event.severity === "warning" && styles.eventWarning]}><MaterialIcon name={event.type === "customs_hold" ? "gavel" : event.type === "delay_detected" ? "warning-amber" : "my-location"} size={16} color="#FFFFFF" /></View><View style={styles.eventBody}><Text style={styles.eventMessage}>{event.message}</Text><Text style={styles.eventMeta}>{event.source} · {new Date(event.occurredAt).toLocaleString("fr-FR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}</Text></View></View>)}
     </View>
   );
 }

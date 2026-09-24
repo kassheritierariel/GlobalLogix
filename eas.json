@@ -4,12 +4,28 @@
     "appVersionSource": "remote"
   },
   "build": {
+    "production": {
+      "android": {
+        "buildType": "app-bundle"
+      },
+      "autoIncrement": true,
+      "environment": "production",
+      "channel": "production"
+    },
     "production-apk": {
       "android": {
         "buildType": "apk"
       },
       "environment": "production",
       "channel": "production"
+    }
+  },
+  "submit": {
+    "production": {
+      "android": {
+        "track": "internal",
+        "releaseStatus": "draft"
+      }
     }
   }
 }

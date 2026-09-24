@@ -1,4 +1,4 @@
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { MaterialIcon } from "@/components/material-icon";
 import * as FileSystem from "expo-file-system/legacy";
 import * as MailComposer from "expo-mail-composer";
 import * as Print from "expo-print";
@@ -94,16 +94,16 @@ export function TrackingShareQr({ url, expiresAt, trackingNumber }: TrackingShar
   return (
     <View style={styles.card} accessibilityLabel="QR code du lien de suivi sécurisé">
       <View style={styles.heading}>
-        <View style={styles.icon}><MaterialIcons name="qr-code-2" size={20} color="#007FFF" /></View>
+        <View style={styles.icon}><MaterialIcon name="qr-code-2" size={20} color="#007FFF" /></View>
         <View style={styles.copy}><Text style={styles.title}>Accès client par QR code</Text><Text style={styles.subtitle}>Le client peut scanner ce code sur son téléphone.</Text></View>
       </View>
       <View style={styles.codeFrame}><QRCode getRef={(ref) => { qrRef.current = ref as unknown as QrSvgReference; }} value={url} size={164} color="#062B5C" backgroundColor="#FFFFFF" quietZone={8} /></View>
-      <View style={styles.notice}><MaterialIcons name="schedule" size={15} color="#936200" /><Text style={styles.noticeText}>Lien sécurisé valable jusqu’au {new Date(expiresAt).toLocaleString("fr-FR", { dateStyle: "medium", timeStyle: "short" })}.</Text></View>
+      <View style={styles.notice}><MaterialIcon name="schedule" size={15} color="#936200" /><Text style={styles.noticeText}>Lien sécurisé valable jusqu’au {new Date(expiresAt).toLocaleString("fr-FR", { dateStyle: "medium", timeStyle: "short" })}.</Text></View>
       <View style={styles.actions}>
-        <Pressable disabled={action !== null} onPress={() => void exportQr()} style={({ pressed }) => [styles.action, pressed && styles.pressed, action !== null && styles.disabled]}><MaterialIcons name="download" size={16} color="#062B5C" /><Text style={styles.actionText}>{label("Exporter PNG", "export")}</Text></Pressable>
-        <Pressable disabled={action !== null} onPress={() => void printQr()} style={({ pressed }) => [styles.action, pressed && styles.pressed, action !== null && styles.disabled]}><MaterialIcons name="print" size={16} color="#062B5C" /><Text style={styles.actionText}>{label("Imprimer", "print")}</Text></Pressable>
-        <Pressable disabled={action !== null} onPress={() => void composeEmail()} style={({ pressed }) => [styles.action, styles.emailAction, pressed && styles.pressed, action !== null && styles.disabled]}><MaterialIcons name="email" size={16} color="#CE1126" /><Text style={styles.emailText}>{label("E-mail", "email")}</Text></Pressable>
-        <Pressable disabled={action !== null} onPress={() => void shareMessage()} style={({ pressed }) => [styles.action, styles.messageAction, pressed && styles.pressed, action !== null && styles.disabled]}><MaterialIcons name="forum" size={16} color="#007FFF" /><Text style={styles.messageText}>{label("Messagerie", "message")}</Text></Pressable>
+        <Pressable disabled={action !== null} onPress={() => void exportQr()} style={({ pressed }) => [styles.action, pressed && styles.pressed, action !== null && styles.disabled]}><MaterialIcon name="download" size={16} color="#062B5C" /><Text style={styles.actionText}>{label("Exporter PNG", "export")}</Text></Pressable>
+        <Pressable disabled={action !== null} onPress={() => void printQr()} style={({ pressed }) => [styles.action, pressed && styles.pressed, action !== null && styles.disabled]}><MaterialIcon name="print" size={16} color="#062B5C" /><Text style={styles.actionText}>{label("Imprimer", "print")}</Text></Pressable>
+        <Pressable disabled={action !== null} onPress={() => void composeEmail()} style={({ pressed }) => [styles.action, styles.emailAction, pressed && styles.pressed, action !== null && styles.disabled]}><MaterialIcon name="email" size={16} color="#CE1126" /><Text style={styles.emailText}>{label("E-mail", "email")}</Text></Pressable>
+        <Pressable disabled={action !== null} onPress={() => void shareMessage()} style={({ pressed }) => [styles.action, styles.messageAction, pressed && styles.pressed, action !== null && styles.disabled]}><MaterialIcon name="forum" size={16} color="#007FFF" /><Text style={styles.messageText}>{label("Messagerie", "message")}</Text></Pressable>
       </View>
     </View>
   );

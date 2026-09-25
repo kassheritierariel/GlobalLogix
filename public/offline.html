@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#007FFF" />
+  <title>GlobalLogix — Hors connexion</title>
+  <style>
+    *{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;background:linear-gradient(145deg,#007fff,#003f87);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#062b5c;padding:24px}.card{width:min(100%,430px);background:#fff;border:1px solid rgba(255,255,255,.7);border-radius:28px;padding:32px;text-align:center;box-shadow:0 24px 60px rgba(0,31,73,.28)}.mark{width:72px;height:72px;margin:0 auto 18px;border-radius:22px;background:#f7d116;display:grid;place-items:center;font-size:34px;font-weight:900}.eyebrow{color:#007fff;font-size:12px;font-weight:900;letter-spacing:1.4px}.title{font-size:27px;margin:8px 0}.copy{color:#5b6d84;line-height:1.6}.status{min-height:42px;margin-top:16px;border-radius:12px;background:#edf5fc;color:#415f80;display:flex;align-items:center;justify-content:center;padding:10px 12px;font-size:13px;font-weight:700}.status.online{background:#e7f5ec;color:#147a46}.status.error{background:#fff2d9;color:#805c00}.button{appearance:none;border:0;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;min-width:150px;margin-top:16px;padding:13px 20px;border-radius:14px;background:#007fff;color:#fff;font:inherit;font-weight:900;transition:transform .14s ease,opacity .14s ease}.button:active{transform:scale(.98)}.button:disabled{cursor:wait;opacity:.68}.hint{color:#718496;font-size:11px;line-height:1.5;margin:14px 0 0}@media(prefers-color-scheme:dark){body{background:linear-gradient(145deg,#071a2d,#003f87)}.card{background:#10283d;border-color:#36516a;color:#f6faff}.copy,.hint{color:#b6c8d9}.status{background:#173858;color:#d8e7f5}.status.online{background:#153b2a;color:#aee4c1}.status.error{background:#4b3a12;color:#ffe38a}}@media(prefers-reduced-motion:reduce){.button{transition:none}}
+  </style>
+</head>
+<body>
+  <main class="card">
+    <div class="mark" aria-hidden="true">G</div>
+    <div class="eyebrow">GLOBALLOGIX</div>
+    <h1 class="title">Connexion indisponible</h1>
+    <p class="copy">Vérifiez votre accès Internet pour synchroniser les expéditions et recevoir les dernières mises à jour.</p>
+    <div class="status error" id="network-status" role="status" aria-live="polite" aria-atomic="true">Mode hors ligne actif</div>
+    <button class="button" id="retry" type="button">Réessayer</button>
+    <p class="hint">Aucune donnée n’est envoyée pendant cette vérification. La page se recharge uniquement quand le serveur GlobalLogix répond.</p>
+  </main>
+  <script>
+    (() => {
+      const button = document.getElementById("retry");
+      const status = document.getElementById("network-status");
+
+      async function retryConnection() {
+        button.disabled = true;
+        button.textContent = "Vérification…";
+        status.className = "status";
+        status.textContent = "Recherche d’une connexion Internet…";
+        try {
+          const response = await fetch(`/api/health?retry=${Date.now()}`, { cache: "no-store" });
+          if (!response.ok) throw new Error("Serveur indisponible");
+          status.className = "status online";
+          status.textContent = "Connexion rétablie. Rechargement de GlobalLogix…";
+          button.textContent = "Connexion rétablie";
+          window.setTimeout(() => window.location.replace("/"), 550);
+        } catch {
+          status.className = "status error";
+          status.textContent = "Toujours hors ligne. Vérifiez le Wi-Fi ou les données mobiles.";
+          button.disabled = false;
+          button.textContent = "Réessayer";
+        }
+      }
+
+      button.addEventListener("click", retryConnection);
+      window.addEventListener("online", retryConnection);
+      window.addEventListener("offline", () => {
+        status.className = "status error";
+        status.textContent = "Mode hors ligne actif";
+      });
+    })();
+  </script>
+</body>
+</html>

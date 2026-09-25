@@ -230,3 +230,9 @@
 - [ ] Compléter et valider les déclarations Data safety et contenu de l’application dans Play Console
 - [ ] Passer le test fermé si Google l’exige, puis soumettre la version à la revue de production
 - [x] Rediriger les prévisualisations temporaires vers le domaine public Firebase autorisé avant Google Sign-In
+- [x] Ajouter un manifeste PWA installable avec icônes standard, maskable et Apple Touch
+- [x] Ajouter un service worker prudent réseau-d’abord avec page hors ligne et exclusion stricte des API
+- [x] Ajouter les en-têtes anti-cache du service worker et le cache immutable des bundles versionnés
+- [x] Ajouter des transitions de navigation et des retours visuels/haptiques accessibles sur mobile
+- [x] Ajouter un splash plein écran brandé pendant toutes les phases de Google Sign-In
+- [x] Rendre la connexion défilable sur les petits écrans mobiles

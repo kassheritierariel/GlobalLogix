@@ -1015,7 +1015,20 @@ async function startServer() {
   );
 
   const webRoot = path.resolve(process.cwd(), "dist", "web");
-  app.use(express.static(webRoot, { extensions: ["html"], index: "index.html" }));
+  app.use(express.static(webRoot, {
+    extensions: ["html"],
+    index: "index.html",
+    setHeaders: (res, filePath) => {
+      const normalizedPath = filePath.replaceAll("\\", "/");
+      if (normalizedPath.endsWith("/sw.js") || normalizedPath.endsWith("/manifest.json")) {
+        res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+        return;
+      }
+      if (normalizedPath.includes("/_expo/static/")) {
+        res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+      }
+    },
+  }));
   app.get("*", (req, res, next) => {
     const webFile = resolveExpoWebFile(webRoot, req.path);
     if (!webFile) {

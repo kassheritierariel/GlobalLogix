@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from "react";
-import { ActivityIndicator, Animated, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { router } from "expo-router";
 
+import { AnimatedPressable } from "@/components/animated-pressable";
 import { RdcFlagAccent } from "@/components/rdc-flag-accent";
 import { GlobalLogixBrandLogo } from "@/components/globallogix-brand-logo";
-import { GoogleAuthProgress, type GoogleAuthPhase } from "@/components/google-auth-progress";
+import { GoogleAuthSplash } from "@/components/google-auth-splash";
+import type { GoogleAuthPhase } from "@/components/google-auth-progress";
 import { useAuth } from "@/lib/auth-context";
 
 export default function LoginScreen() {
@@ -16,11 +18,6 @@ export default function LoginScreen() {
   const [isGoogleSubmitting, setIsGoogleSubmitting] = useState(false);
   const [googlePhase, setGooglePhase] = useState<GoogleAuthPhase>("opening");
   const googlePhaseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const googleProgress = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    Animated.timing(googleProgress, { toValue: isGoogleSubmitting ? 1 : 0, duration: 180, useNativeDriver: true }).start();
-  }, [googleProgress, isGoogleSubmitting]);
 
   useEffect(() => () => {
     if (googlePhaseTimer.current) clearTimeout(googlePhaseTimer.current);
@@ -65,13 +62,14 @@ export default function LoginScreen() {
 
   return (
     <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={styles.container}>
-      <View style={styles.brandBlock}>
-        <GlobalLogixBrandLogo size="login" />
-        <Text style={styles.brand}>GlobalLogix</Text>
-        <Text style={styles.tagline}>Opérations logistiques, où que vous soyez.</Text>
-        <View style={styles.flagWrap}><RdcFlagAccent /></View>
-      </View>
-      <View style={styles.formCard}>
+      <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+        <View style={styles.brandBlock}>
+          <GlobalLogixBrandLogo size="login" />
+          <Text style={styles.brand}>GlobalLogix</Text>
+          <Text style={styles.tagline}>Opérations logistiques, où que vous soyez.</Text>
+          <View style={styles.flagWrap}><RdcFlagAccent /></View>
+        </View>
+        <View style={styles.formCard}>
         <Text style={styles.title}>Accès agence</Text>
         <Text style={styles.subtitle}>Connectez-vous pour suivre vos expéditions en temps réel.</Text>
         <Text style={styles.label}>Adresse e-mail</Text>
@@ -79,31 +77,33 @@ export default function LoginScreen() {
         <Text style={styles.label}>Mot de passe</Text>
         <TextInput value={password} onChangeText={setPassword} placeholder="Votre mot de passe" secureTextEntry style={styles.input} returnKeyType="done" onSubmitEditing={submit} />
         {error ? <Text accessibilityRole="alert" style={styles.error}>{error}</Text> : null}
-        <Pressable disabled={isSubmitting} onPress={submit} style={({ pressed }) => [styles.primaryButton, pressed && styles.pressed, isSubmitting && styles.disabled]}>
+        <AnimatedPressable disabled={isSubmitting} onPress={submit} style={[styles.primaryButton, isSubmitting && styles.disabled]}>
           {isSubmitting ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.primaryLabel}>Ouvrir l’espace de suivi</Text>}
-        </Pressable>
-        <Pressable accessibilityState={{ busy: isGoogleSubmitting, disabled: isSubmitting || isGoogleSubmitting }} disabled={isSubmitting || isGoogleSubmitting} onPress={() => void googleLogin()} style={({ pressed }) => [styles.googleButton, pressed && styles.pressed, (isSubmitting || isGoogleSubmitting) && styles.disabled]}>{isGoogleSubmitting ? <View style={styles.googleBusy}><ActivityIndicator size="small" color="#007FFF" /><Text style={styles.googleLabel}>{googlePhase === "opening" ? "Ouverture de Google…" : googlePhase === "redirecting" ? "Redirection sécurisée…" : googlePhase === "waiting" ? "Sélection du compte…" : "Vérification de la session…"}</Text></View> : <Text style={styles.googleLabel}>Continuer avec Google</Text>}</Pressable>
-        <GoogleAuthProgress visible={isGoogleSubmitting} progress={googleProgress} phase={googlePhase} />
-        <Pressable onPress={() => router.push("/agency-signup" as never)} style={({ pressed }) => [styles.signupButton, pressed && styles.pressed]}><Text style={styles.signupLabel}>Créer une demande d’agence SaaS</Text></Pressable>
-        <Pressable onPress={() => router.push("/client" as never)} style={({ pressed }) => [styles.clientButton, pressed && styles.pressed]}>
+        </AnimatedPressable>
+        <AnimatedPressable accessibilityState={{ busy: isGoogleSubmitting, disabled: isSubmitting || isGoogleSubmitting }} disabled={isSubmitting || isGoogleSubmitting} onPress={() => void googleLogin()} style={[styles.googleButton, (isSubmitting || isGoogleSubmitting) && styles.disabled]}>{isGoogleSubmitting ? <View style={styles.googleBusy}><ActivityIndicator size="small" color="#007FFF" /><Text style={styles.googleLabel}>{googlePhase === "opening" ? "Ouverture de Google…" : googlePhase === "redirecting" ? "Redirection sécurisée…" : googlePhase === "waiting" ? "Sélection du compte…" : "Vérification de la session…"}</Text></View> : <Text style={styles.googleLabel}>Continuer avec Google</Text>}</AnimatedPressable>
+        <AnimatedPressable hapticFeedback="selection" onPress={() => router.push("/agency-signup" as never)} style={styles.signupButton}><Text style={styles.signupLabel}>Créer une demande d’agence SaaS</Text></AnimatedPressable>
+        <AnimatedPressable hapticFeedback="selection" onPress={() => router.push("/client" as never)} style={styles.clientButton}>
           <Text style={styles.clientButtonLabel}>Je suis client · suivre mes colis par SMS</Text>
-        </Pressable>
+        </AnimatedPressable>
         <View style={styles.noteBox}>
           <Text style={styles.noteTitle}>Accès sécurisé</Text>
           <Text style={styles.note}>La connexion utilise Firebase Auth. Les permissions et le périmètre agence proviennent des Custom Claims définis par votre administration.</Text>
         </View>
         <View style={styles.legalLinks}>
-          <Pressable onPress={() => router.push("/privacy" as never)} style={({ pressed }) => pressed && styles.pressed}><Text style={styles.legalLink}>Confidentialité</Text></Pressable>
+          <AnimatedPressable hapticFeedback="selection" onPress={() => router.push("/privacy" as never)}><Text style={styles.legalLink}>Confidentialité</Text></AnimatedPressable>
           <Text style={styles.legalSeparator}>·</Text>
-          <Pressable onPress={() => router.push("/account-deletion" as never)} style={({ pressed }) => pressed && styles.pressed}><Text style={styles.legalLink}>Supprimer un compte</Text></Pressable>
+          <AnimatedPressable hapticFeedback="selection" onPress={() => router.push("/account-deletion" as never)}><Text style={styles.legalLink}>Supprimer un compte</Text></AnimatedPressable>
         </View>
-      </View>
+        </View>
+      </ScrollView>
+      <GoogleAuthSplash phase={googlePhase} visible={isGoogleSubmitting} />
     </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#007FFF", justifyContent: "center", padding: 24 },
+  container: { flex: 1, backgroundColor: "#007FFF" },
+  scrollContent: { flexGrow: 1, justifyContent: "center", padding: 24 },
   brandBlock: { alignItems: "center", marginBottom: 32 },
   brand: { color: "#FFFFFF", fontSize: 30, fontWeight: "800", letterSpacing: -0.5 },
   tagline: { color: "#FFF6CC", fontSize: 15, marginTop: 8, textAlign: "center" },
@@ -123,7 +123,6 @@ const styles = StyleSheet.create({
   signupLabel: { color: "#007FFF", fontSize: 12, fontWeight: "800" },
   clientButton: { alignItems: "center", borderColor: "#007FFF", borderRadius: 14, borderWidth: 1, height: 48, justifyContent: "center", marginTop: 10 },
   clientButtonLabel: { color: "#007FFF", fontSize: 13, fontWeight: "800" },
-  pressed: { opacity: 0.86, transform: [{ scale: 0.98 }] },
   disabled: { opacity: 0.6 },
   noteBox: { backgroundColor: "#E7F3FF", borderRadius: 14, marginTop: 18, padding: 14 },
   noteTitle: { color: "#003F87", fontSize: 13, fontWeight: "800", marginBottom: 4 },

@@ -4,6 +4,7 @@ import { ActivityIndicator, Platform, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useAuth } from "@/lib/auth-context";
+import { HapticTab } from "@/components/haptic-tab";
 
 export default function TabLayout() {
   const { user, isRestoring } = useAuth();
@@ -21,7 +22,7 @@ export default function TabLayout() {
   }
 
   return (
-    <Tabs screenOptions={{ headerShown: false, tabBarActiveTintColor: "#003F87", tabBarInactiveTintColor: "#58708A", tabBarHideOnKeyboard: true, tabBarItemStyle: styles.tabItem, tabBarStyle: [styles.tabBar, { height: 58 + bottomPadding, paddingBottom: bottomPadding }], tabBarLabelStyle: styles.tabLabel }}>
+    <Tabs screenOptions={{ animation: Platform.OS === "web" ? "none" : "fade", headerShown: false, tabBarActiveTintColor: "#003F87", tabBarInactiveTintColor: "#58708A", tabBarButton: HapticTab, tabBarHideOnKeyboard: true, tabBarItemStyle: styles.tabItem, tabBarStyle: [styles.tabBar, { height: 58 + bottomPadding, paddingBottom: bottomPadding }], tabBarLabelStyle: styles.tabLabel, transitionSpec: { animation: "timing", config: { duration: 180 } } }}>
       <Tabs.Screen name="index" options={{ title: "Accueil", tabBarIcon: ({ color, size }) => <MaterialIcon name="space-dashboard" size={size} color={color} /> }} />
       <Tabs.Screen name="shipments" options={{ title: "Expéditions", tabBarIcon: ({ color, size }) => <MaterialIcon name="inventory-2" size={size} color={color} /> }} />
       <Tabs.Screen name="tracking" options={{ title: "Suivi", tabBarIcon: ({ color, size }) => <MaterialIcon name="my-location" size={size} color={color} /> }} />

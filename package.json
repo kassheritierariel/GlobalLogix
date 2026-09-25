@@ -18,6 +18,7 @@
     "db:push": "drizzle-kit generate && drizzle-kit migrate",
     "android": "expo run:android",
     "ios": "expo run:ios",
+    "pwa:assets": "python3 scripts/generate_pwa_assets.py",
     "qr": "node scripts/generate_qr.mjs",
     "firebase:claims": "tsx server/scripts/assign-firebase-claims.ts",
     "firebase:bootstrap-super-admin": "tsx server/scripts/create-initial-super-admin.ts",

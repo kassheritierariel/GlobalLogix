@@ -27,6 +27,8 @@ describe("retours d’interaction mobiles", () => {
     expect(login).toContain('keyboardShouldPersistTaps="handled"');
     expect(login).toContain("<GoogleAuthSplash");
     expect(login).toContain("visible={isGoogleSubmitting}");
+    expect(login).toContain('if (!__DEV__ || Platform.OS !== "web"');
+    expect(login).toContain('get("previewGoogleSplash") !== "1"');
     expect(splash).toContain('presentationStyle="fullScreen"');
     expect(splash).toContain('accessibilityRole="progressbar"');
     expect(splash).toContain("Chargement de votre espace");

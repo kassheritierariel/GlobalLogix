@@ -23,6 +23,13 @@ export default function LoginScreen() {
     if (googlePhaseTimer.current) clearTimeout(googlePhaseTimer.current);
   }, []);
 
+  useEffect(() => {
+    if (!__DEV__ || Platform.OS !== "web" || typeof window === "undefined") return;
+    if (new URLSearchParams(window.location.search).get("previewGoogleSplash") !== "1") return;
+    setGooglePhase("waiting");
+    setIsGoogleSubmitting(true);
+  }, []);
+
   const submit = async () => {
     setError("");
     setIsSubmitting(true);

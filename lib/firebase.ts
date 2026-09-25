@@ -4,6 +4,8 @@ import * as FirebaseAuth from "firebase/auth";
 import { getAuth, initializeAuth, type Auth, type User } from "firebase/auth";
 import { Platform } from "react-native";
 
+import { resolveCanonicalGoogleAuthUrl } from "@/lib/firebase-auth-origin";
+
 const firebaseConfig = {
   apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN,
@@ -56,9 +58,15 @@ export async function getFirebaseIdToken(forceRefresh = false) {
 export async function signInWithGoogleAccount() {
   if (!isFirebaseConfigured) throw new Error("Firebase n’est pas configuré pour cette version.");
   if (Platform.OS !== "web") throw new Error("La connexion Google nécessite encore la configuration des clients OAuth Android et iOS dans Firebase.");
+  const canonicalUrl = resolveCanonicalGoogleAuthUrl(typeof window !== "undefined" ? window.location : null);
+  if (canonicalUrl) {
+    window.location.replace(canonicalUrl);
+    return "redirected" as const;
+  }
   const provider = new FirebaseAuth.GoogleAuthProvider();
   provider.setCustomParameters({ prompt: "select_account" });
   await FirebaseAuth.signInWithPopup(getFirebaseAuth(), provider);
+  return "signed-in" as const;
 }
 
 export type FirebaseAuthUser = User;

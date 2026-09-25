@@ -1,11 +1,15 @@
 import { ActivityIndicator, Animated, StyleSheet, Text, View } from "react-native";
 
-export type GoogleAuthPhase = "opening" | "waiting" | "finalizing";
+export type GoogleAuthPhase = "opening" | "redirecting" | "waiting" | "finalizing";
 
 const COPY: Record<GoogleAuthPhase, { title: string; text: string }> = {
   opening: {
     title: "Ouverture sécurisée de Google",
     text: "Préparation du sélecteur de compte…",
+  },
+  redirecting: {
+    title: "Ouverture du domaine sécurisé",
+    text: "GlobalLogix vous redirige vers l’adresse publique autorisée par Firebase…",
   },
   waiting: {
     title: "Sélection du compte en cours",

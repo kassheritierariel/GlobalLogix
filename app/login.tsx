@@ -44,8 +44,13 @@ export default function LoginScreen() {
     setIsGoogleSubmitting(true);
     googlePhaseTimer.current = setTimeout(() => setGooglePhase("waiting"), 700);
     try {
-      await loginWithGoogle();
+      const outcome = await loginWithGoogle();
       if (googlePhaseTimer.current) clearTimeout(googlePhaseTimer.current);
+      if (outcome === "redirected") {
+        setGooglePhase("redirecting");
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        return;
+      }
       setGooglePhase("finalizing");
       await new Promise((resolve) => setTimeout(resolve, 250));
       router.replace("/" as never);
@@ -77,7 +82,7 @@ export default function LoginScreen() {
         <Pressable disabled={isSubmitting} onPress={submit} style={({ pressed }) => [styles.primaryButton, pressed && styles.pressed, isSubmitting && styles.disabled]}>
           {isSubmitting ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.primaryLabel}>Ouvrir l’espace de suivi</Text>}
         </Pressable>
-        <Pressable accessibilityState={{ busy: isGoogleSubmitting, disabled: isSubmitting || isGoogleSubmitting }} disabled={isSubmitting || isGoogleSubmitting} onPress={() => void googleLogin()} style={({ pressed }) => [styles.googleButton, pressed && styles.pressed, (isSubmitting || isGoogleSubmitting) && styles.disabled]}>{isGoogleSubmitting ? <View style={styles.googleBusy}><ActivityIndicator size="small" color="#007FFF" /><Text style={styles.googleLabel}>{googlePhase === "opening" ? "Ouverture de Google…" : googlePhase === "waiting" ? "Sélection du compte…" : "Vérification de la session…"}</Text></View> : <Text style={styles.googleLabel}>Continuer avec Google</Text>}</Pressable>
+        <Pressable accessibilityState={{ busy: isGoogleSubmitting, disabled: isSubmitting || isGoogleSubmitting }} disabled={isSubmitting || isGoogleSubmitting} onPress={() => void googleLogin()} style={({ pressed }) => [styles.googleButton, pressed && styles.pressed, (isSubmitting || isGoogleSubmitting) && styles.disabled]}>{isGoogleSubmitting ? <View style={styles.googleBusy}><ActivityIndicator size="small" color="#007FFF" /><Text style={styles.googleLabel}>{googlePhase === "opening" ? "Ouverture de Google…" : googlePhase === "redirecting" ? "Redirection sécurisée…" : googlePhase === "waiting" ? "Sélection du compte…" : "Vérification de la session…"}</Text></View> : <Text style={styles.googleLabel}>Continuer avec Google</Text>}</Pressable>
         <GoogleAuthProgress visible={isGoogleSubmitting} progress={googleProgress} phase={googlePhase} />
         <Pressable onPress={() => router.push("/agency-signup" as never)} style={({ pressed }) => [styles.signupButton, pressed && styles.pressed]}><Text style={styles.signupLabel}>Créer une demande d’agence SaaS</Text></Pressable>
         <Pressable onPress={() => router.push("/client" as never)} style={({ pressed }) => [styles.clientButton, pressed && styles.pressed]}>

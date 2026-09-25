@@ -229,3 +229,4 @@
 - [ ] Fournir à Google un compte de revue dédié sans données client réelles
 - [ ] Compléter et valider les déclarations Data safety et contenu de l’application dans Play Console
 - [ ] Passer le test fermé si Google l’exige, puis soumettre la version à la revue de production
+- [x] Rediriger les prévisualisations temporaires vers le domaine public Firebase autorisé avant Google Sign-In

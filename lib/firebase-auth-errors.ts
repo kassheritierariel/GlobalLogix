@@ -6,7 +6,7 @@ export function toFirebaseAuthMessage(error: unknown) {
 
   switch (code) {
     case "auth/unauthorized-domain":
-      return "Connexion Google indisponible sur ce domaine. Ajoutez ce domaine aux domaines autorisés dans Firebase Authentication, puis réessayez.";
+      return "Connexion Google indisponible sur cette adresse. Utilisez https://globallogix-j5jxfyba.manus.space : seuls les domaines explicitement autorisés dans Firebase Authentication sont acceptés.";
     case "auth/invalid-email":
       return "Saisissez une adresse e-mail valide, par exemple contact@votreagence.com.";
     case "auth/popup-closed-by-user":

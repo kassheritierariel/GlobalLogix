@@ -10,7 +10,7 @@ type AuthContextValue = {
   user: MobileUser | null;
   isRestoring: boolean;
   login: (email: string, password: string) => Promise<void>;
-  loginWithGoogle: () => Promise<void>;
+  loginWithGoogle: () => Promise<"signed-in" | "redirected">;
   logout: () => Promise<void>;
   refreshClaims: () => Promise<void>;
 };
@@ -61,7 +61,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const loginWithGoogle = async () => {
-    try { await signInWithGoogleAccount(); haptic.success(); }
+    try {
+      const outcome = await signInWithGoogleAccount();
+      if (outcome === "signed-in") haptic.success();
+      return outcome;
+    }
     catch (error) { haptic.error(); throw new Error(toFirebaseAuthMessage(error)); }
   };
 

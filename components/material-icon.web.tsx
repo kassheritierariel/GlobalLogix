@@ -10,10 +10,12 @@ const EXACT_SYMBOLS: Record<string, string> = {
   check: "✓",
   close: "×",
   delete: "×",
+  "dark-mode": "◐",
   download: "↓",
   edit: "✎",
   flight: "✈",
   info: "i",
+  "light-mode": "☀",
   lock: "◆",
   logout: "↪",
   mail: "@",
@@ -30,6 +32,8 @@ const EXACT_SYMBOLS: Record<string, string> = {
   sync: "↻",
   upload: "↑",
   warning: "!",
+  wifi: "⌁",
+  "wifi-off": "×",
 };
 
 function resolveSymbol(name: string) {

@@ -49,6 +49,9 @@ describe("PWA GlobalLogix", () => {
     expect(worker).toContain('caches.match("/offline.html")');
     expect(worker).not.toContain("firebase");
     expect(existsSync("public/offline.html")).toBe(true);
+    const offline = readFileSync("public/offline.html", "utf8");
+    expect(offline).toContain('id="retry"');
+    expect(offline).toContain("retryConnection");
   });
 
   it("empêche le navigateur de figer une ancienne version du worker", () => {

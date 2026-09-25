@@ -1,6 +1,6 @@
 /* GlobalLogix PWA service worker: shell cache only, network-first navigation. */
 const CACHE_PREFIX = "globallogix-pwa";
-const CACHE_VERSION = "v1";
+const CACHE_VERSION = "v2";
 const CACHE_NAME = `${CACHE_PREFIX}-${CACHE_VERSION}`;
 const APP_SHELL = [
   "/",

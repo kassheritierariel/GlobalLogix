@@ -1,19 +1,22 @@
 import { MaterialIcon } from "@/components/material-icon";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { FlatList, Pressable, Share, StyleSheet, Text, View } from "react-native";
 
 import { ScreenContainer } from "@/components/screen-container";
 import { StatusBadge } from "@/components/status-badge";
 import { ShipmentTimeline } from "@/components/shipment-timeline";
 import { MultimodalLocationCard } from "@/components/multimodal-location-card";
+import { ScrollJumpControls } from "@/components/scroll-jump-controls";
 import { haptic } from "@/lib/haptics";
 import { createShareLink, getPublicTrackingUrl, hasLogisticsApi } from "@/lib/logistics-api";
 import { useTracking } from "@/lib/tracking-context";
+import type { Shipment } from "@/lib/types";
 
 export default function TrackingScreen() {
   const { shipments, selectedShipmentId, selectShipment, connectionState, reconnect, resetLive, lastEventAt } = useTracking();
   const selected = useMemo(() => shipments.find((shipment) => shipment.id === selectedShipmentId) ?? shipments[0], [shipments, selectedShipmentId]);
   const [shareMessage, setShareMessage] = useState("");
+  const listRef = useRef<FlatList<Shipment>>(null);
 
   if (!selected) {
     return <ScreenContainer className="bg-background"><View style={styles.emptyState}><View style={styles.emptyStateIcon}><MaterialIcon name="radar" size={30} color="#235B9D" /></View><Text style={styles.emptyStateTitle}>Suivi prêt à démarrer</Text><Text style={styles.emptyStateBody}>Aucune expédition n’est encore disponible dans votre périmètre. Les positions et jalons apparaîtront ici dès la première synchronisation.</Text></View></ScreenContainer>;
@@ -37,20 +40,24 @@ export default function TrackingScreen() {
 
   return (
     <ScreenContainer className="bg-background">
+      <View style={styles.screen}>
       <FlatList
+        ref={listRef}
         data={shipments}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[styles.content, styles.contentWithControls]}
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={<View style={styles.main}><View style={styles.topLine}><View><Text style={styles.eyebrow}>TÉLÉMÉTRIE D’EXPÉDITION</Text><Text style={styles.title}>Suivi en direct</Text></View><View style={[styles.channelBadge, connectionState !== "connected" && styles.channelPaused]}><View style={[styles.channelDot, connectionState !== "connected" && styles.channelDotPaused]} /><Text style={[styles.channelText, connectionState !== "connected" && styles.channelTextPaused]}>{connectionState === "connected" ? "Canal actif" : "Reconnexion"}</Text></View></View><Text style={styles.subtitle}>Le canal WebSocket authentifié reçoit les événements envoyés par le serveur GlobalLogix.</Text><View style={styles.telemetryRow}><View style={styles.telemetryItem}><Text style={styles.telemetryLabel}>Dernier événement</Text><Text style={styles.telemetryValue}>{lastEventAt}</Text></View><View style={styles.telemetryDivider} /><View style={styles.telemetryItem}><Text style={styles.telemetryLabel}>Canal</Text><Text style={styles.telemetryValue}>{connectionState}</Text></View></View><View style={styles.detailCard}><View style={styles.detailTop}><View><Text style={styles.trackingNumber}>{selected.trackingNumber}</Text><Text style={styles.currentPosition}>{selected.currentPosition}</Text></View><StatusBadge status={selected.status} /></View><View style={styles.routeVisual}><View style={styles.routePoint}><View style={styles.originDot} /><Text style={styles.routeLabel}>{selected.origin}</Text></View><View style={styles.routeLine}><View style={[styles.routeLineActive, { width: `${selected.progress}%` }]} /><View style={[styles.vehicleMarker, { left: `${selected.progress}%` }]}><MaterialIcon name={selected.mode === "air" ? "flight" : selected.mode === "sea" ? "directions-boat" : "local-shipping"} size={15} color="#FFFFFF" /></View></View><View style={styles.routePointEnd}><View style={styles.destinationDot} /><Text style={styles.routeLabelEnd}>{selected.destination}</Text></View></View><View style={styles.progressMeta}><View><Text style={styles.progressValue}>{selected.progress}%</Text><Text style={styles.progressLabel}>progression</Text></View><View style={styles.metricRight}><Text style={styles.metricValue}>{selected.distanceRemainingKm.toLocaleString("fr-FR")} km</Text><Text style={styles.progressLabel}>distance restante</Text></View></View><View style={styles.etaCard}><MaterialIcon name="schedule" size={18} color="#FF6B35" /><Text style={styles.etaText}>Arrivée estimée · {selected.eta}</Text></View></View><MultimodalLocationCard shipment={selected} /><View style={styles.controls}><Pressable onPress={toggle} style={({ pressed }) => [styles.primaryControl, pressed && styles.pressed]}><MaterialIcon name="sync" size={21} color="#FFFFFF" /><Text style={styles.primaryControlText}>Reconnecter</Text></Pressable><Pressable onPress={reset} style={({ pressed }) => [styles.secondaryControl, pressed && styles.pressed]}><MaterialIcon name="restart-alt" size={20} color="#0A2540" /><Text style={styles.secondaryControlText}>Réinitialiser</Text></Pressable></View><Pressable onPress={() => void shareTracking()} style={({ pressed }) => [styles.shareButton, pressed && styles.pressed]}><MaterialIcon name="share" size={20} color="#0A2540" /><Text style={styles.shareText}>Créer un lien client sécurisé</Text></Pressable>{shareMessage ? <Text style={styles.shareMessage}>{shareMessage}</Text> : null}<ShipmentTimeline shipmentId={selected.id} /><Text style={styles.selectorTitle}>Changer d’expédition</Text></View>}
         renderItem={({ item }) => <Pressable onPress={() => { haptic.selection(); selectShipment(item.id); }} style={({ pressed }) => [styles.selector, item.id === selectedShipmentId && styles.selectorActive, pressed && styles.selectorPressed]}><View><Text style={[styles.selectorId, item.id === selectedShipmentId && styles.selectorIdActive]}>{item.id}</Text><Text numberOfLines={1} style={[styles.selectorRoute, item.id === selectedShipmentId && styles.selectorRouteActive]}>{item.origin} → {item.destination}</Text></View><MaterialIcon name="chevron-right" size={20} color={item.id === selectedShipmentId ? "#FFFFFF" : "#718496"} /></Pressable>}
       />
+      <ScrollJumpControls onTop={() => listRef.current?.scrollToOffset({ offset: 0, animated: true })} onBottom={() => listRef.current?.scrollToEnd({ animated: true })} />
+      </View>
     </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  content: { padding: 20, paddingBottom: 24 }, main: { width: "100%" }, topLine: { alignItems: "flex-start", flexDirection: "row", justifyContent: "space-between" }, eyebrow: { color: "#FF6B35", fontSize: 11, fontWeight: "800", letterSpacing: 1 }, title: { color: "#0A2540", fontSize: 28, fontWeight: "800", marginTop: 5 }, subtitle: { color: "#607386", fontSize: 14, lineHeight: 20, marginTop: 9 },
+  screen: { flex: 1 }, content: { padding: 20, paddingBottom: 24 }, contentWithControls: { paddingBottom: 88 }, main: { width: "100%" }, topLine: { alignItems: "flex-start", flexDirection: "row", justifyContent: "space-between" }, eyebrow: { color: "#FF6B35", fontSize: 11, fontWeight: "800", letterSpacing: 1 }, title: { color: "#0A2540", fontSize: 28, fontWeight: "800", marginTop: 5 }, subtitle: { color: "#607386", fontSize: 14, lineHeight: 20, marginTop: 9 },
   channelBadge: { alignItems: "center", backgroundColor: "#E7F5EC", borderRadius: 999, flexDirection: "row", paddingHorizontal: 10, paddingVertical: 7 }, channelPaused: { backgroundColor: "#FFF2D9" }, channelDot: { backgroundColor: "#14804A", borderRadius: 5, height: 8, marginRight: 6, width: 8 }, channelDotPaused: { backgroundColor: "#C5851D" }, channelText: { color: "#147A46", fontSize: 11, fontWeight: "800" }, channelTextPaused: { color: "#936200" },
   telemetryRow: { alignItems: "center", backgroundColor: "#FFFFFF", borderColor: "#D9E2EC", borderRadius: 16, borderWidth: 1, flexDirection: "row", marginTop: 18, padding: 14 }, telemetryItem: { flex: 1 }, telemetryDivider: { backgroundColor: "#D9E2EC", height: 28, width: 1 }, telemetryLabel: { color: "#718496", fontSize: 11, fontWeight: "700" }, telemetryValue: { color: "#0A2540", fontFamily: "monospace", fontSize: 12, fontWeight: "700", marginTop: 5 },
   detailCard: { backgroundColor: "#FFFFFF", borderColor: "#D9E2EC", borderRadius: 20, borderWidth: 1, marginTop: 14, padding: 18 }, detailTop: { alignItems: "flex-start", flexDirection: "row", justifyContent: "space-between" }, trackingNumber: { color: "#0A2540", fontSize: 17, fontWeight: "800" }, currentPosition: { color: "#607386", fontSize: 12, marginTop: 5, maxWidth: 210 },

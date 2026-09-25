@@ -236,3 +236,10 @@
 - [x] Ajouter des transitions de navigation et des retours visuels/haptiques accessibles sur mobile
 - [x] Ajouter un splash plein écran brandé pendant toutes les phases de Google Sign-In
 - [x] Rendre la connexion défilable sur les petits écrans mobiles
+- [x] Ajouter une bannière réseau globale avec détection Web/Android/iOS et confirmation API sur Web
+- [x] Ajouter un état « Connexion rétablie » et un bouton Réessayer avec retours visuels/haptiques
+- [x] Renforcer la page PWA hors ligne avec vérification manuelle et rechargement contrôlé
+- [x] Ajouter un bouton sombre persistant avant connexion et dans la palette mobile Haut/Bas
+- [x] Adapter la connexion et la barre d’onglets au mode sombre global
+- [x] Étendre les commandes Haut/Bas aux cinq onglets opérationnels principaux
+- [x] Valider 108 tests, TypeScript, Expo Doctor, build Web, serveur production et Prebuild Android API 36

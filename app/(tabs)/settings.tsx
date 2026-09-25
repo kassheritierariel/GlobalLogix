@@ -105,7 +105,7 @@ export default function SettingsScreen() {
                   <Text style={[styles.themeTitle, { color: colorScheme === "dark" ? "#F6FAFF" : "#062B5C" }]}>Mode sombre global</Text>
                   <Text style={[styles.themeText, { color: colorScheme === "dark" ? "#B6C8D9" : "#65768B" }]}>Appliqué à la navigation et aux espaces administrateur.</Text>
                 </View>
-                <Switch value={colorScheme === "dark"} onValueChange={(value) => setColorScheme(value ? "dark" : "light")} trackColor={{ false: "#9FB4C7", true: "#3E85C6" }} thumbColor={colorScheme === "dark" ? "#F7D116" : "#FFFFFF"} />
+                <Switch accessibilityLabel="Activer le mode sombre global" value={colorScheme === "dark"} onValueChange={(value) => { haptic.selection(); setColorScheme(value ? "dark" : "light"); }} trackColor={{ false: "#9FB4C7", true: "#3E85C6" }} thumbColor={colorScheme === "dark" ? "#F7D116" : "#FFFFFF"} />
               </View>
               <View style={styles.profile}>
                 <View style={styles.avatar}><Text style={styles.avatarText}>{(user?.displayName ?? "U").slice(0, 1).toUpperCase()}</Text></View>

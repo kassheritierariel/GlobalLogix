@@ -5,10 +5,13 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useAuth } from "@/lib/auth-context";
 import { HapticTab } from "@/components/haptic-tab";
+import { useThemeContext } from "@/lib/theme-provider";
 
 export default function TabLayout() {
   const { user, isRestoring } = useAuth();
+  const { colorScheme } = useThemeContext();
   const insets = useSafeAreaInsets();
+  const dark = colorScheme === "dark";
   const bottomPadding = Platform.OS === "web" ? 10 : Math.max(insets.bottom, 10);
 
   if (isRestoring) {
@@ -22,7 +25,7 @@ export default function TabLayout() {
   }
 
   return (
-    <Tabs screenOptions={{ animation: Platform.OS === "web" ? "none" : "fade", headerShown: false, tabBarActiveTintColor: "#003F87", tabBarInactiveTintColor: "#58708A", tabBarButton: HapticTab, tabBarHideOnKeyboard: true, tabBarItemStyle: styles.tabItem, tabBarStyle: [styles.tabBar, { height: 58 + bottomPadding, paddingBottom: bottomPadding }], tabBarLabelStyle: styles.tabLabel, transitionSpec: { animation: "timing", config: { duration: 180 } } }}>
+    <Tabs screenOptions={{ animation: Platform.OS === "web" ? "none" : "fade", headerShown: false, tabBarActiveTintColor: dark ? "#F7D116" : "#003F87", tabBarInactiveTintColor: dark ? "#9EB4C8" : "#58708A", tabBarButton: HapticTab, tabBarHideOnKeyboard: true, tabBarItemStyle: styles.tabItem, tabBarStyle: [styles.tabBar, dark && styles.tabBarDark, { height: 58 + bottomPadding, paddingBottom: bottomPadding }], tabBarLabelStyle: styles.tabLabel, transitionSpec: { animation: "timing", config: { duration: 180 } } }}>
       <Tabs.Screen name="index" options={{ title: "Accueil", tabBarIcon: ({ color, size }) => <MaterialIcon name="space-dashboard" size={size} color={color} /> }} />
       <Tabs.Screen name="shipments" options={{ title: "Expéditions", tabBarIcon: ({ color, size }) => <MaterialIcon name="inventory-2" size={size} color={color} /> }} />
       <Tabs.Screen name="tracking" options={{ title: "Suivi", tabBarIcon: ({ color, size }) => <MaterialIcon name="my-location" size={size} color={color} /> }} />
@@ -35,6 +38,7 @@ export default function TabLayout() {
 const styles = StyleSheet.create({
   loading: { alignItems: "center", backgroundColor: "#E8F0F8", flex: 1, justifyContent: "center" },
   tabBar: { backgroundColor: "#FFFFFF", borderTopColor: "#B9D9F7", borderTopWidth: 1, elevation: 12, paddingTop: 6 },
+  tabBarDark: { backgroundColor: "#10283D", borderTopColor: "#315673" },
   tabItem: { minWidth: 58, paddingHorizontal: 1 },
   tabLabel: { fontSize: 10, fontWeight: "800", lineHeight: 13 },
 });

@@ -34,6 +34,7 @@ yarn-error.*
 # local env files
 .env*.local
 google-services.json
+GoogleService-Info.plist
 .super_admin_result.json
 
 # typescript

@@ -3,7 +3,7 @@ import { createContext, useContext, useEffect, useMemo, useState, type ReactNode
 
 import { haptic } from "@/lib/haptics";
 import { toFirebaseAuthMessage } from "@/lib/firebase-auth-errors";
-import { getFirebaseAuth, isFirebaseConfigured, signInWithGoogleAccount } from "@/lib/firebase";
+import { clearGoogleSession, getFirebaseAuth, isFirebaseConfigured, signInWithGoogleAccount } from "@/lib/firebase";
 import type { MobileUser } from "@/lib/types";
 
 type AuthContextValue = {
@@ -71,6 +71,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     if (isFirebaseConfigured) await signOut(getFirebaseAuth());
+    await clearGoogleSession();
     setUser(null);
     haptic.medium();
   };

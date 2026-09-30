@@ -47,6 +47,11 @@ const googleServicesFile =
   googleServicesSecretPath && existsSync(googleServicesSecretPath)
     ? googleServicesSecretPath
     : "./google-services.json";
+const googleServiceInfoSecretPath = process.env.GOOGLE_SERVICE_INFO_PLIST?.trim();
+const googleServiceInfoFile =
+  googleServiceInfoSecretPath && existsSync(googleServiceInfoSecretPath)
+    ? googleServiceInfoSecretPath
+    : "./GoogleService-Info.plist";
 
 const config: ExpoConfig = {
   name: env.appName,
@@ -60,6 +65,7 @@ const config: ExpoConfig = {
   ios: {
     supportsTablet: true,
     bundleIdentifier: env.iosBundleId,
+    googleServicesFile: googleServiceInfoFile,
     "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
@@ -118,6 +124,7 @@ const config: ExpoConfig = {
     ],
     "@react-native-firebase/app",
     "@react-native-firebase/auth",
+    "react-native-nitro-google-signin",
     [
       "expo-video",
       {

@@ -6,7 +6,7 @@ import { describe, expect, it } from "vitest";
 
 const describeFirebasePreproduction = process.env.RUN_FIREBASE_PREPROD_TESTS === "true" ? describe : describe.skip;
 
-describe("préparation Android notifications", () => {
+describe("préparation Android notifications et OAuth natif", () => {
   it("conserve le profil APK de production", () => {
     const eas = JSON.parse(readFileSync("eas.json", "utf8")) as {
       build?: {
@@ -23,7 +23,7 @@ describe("préparation Android notifications", () => {
     expect(eas.submit?.production?.android).toEqual({ track: "internal", releaseStatus: "draft" });
   });
 
-  it("déclare le plugin Expo Notifications et la permission Android", () => {
+  it("déclare les plugins natifs, Firebase Android/iOS et la permission Android", () => {
     const config = readFileSync("app.config.ts", "utf8");
     expect(config).toContain('"expo-notifications"');
     expect(config).toContain('"POST_NOTIFICATIONS"');
@@ -31,16 +31,23 @@ describe("préparation Android notifications", () => {
     expect(config).toContain("targetSdkVersion: 36");
     expect(config).not.toContain('"expo-audio"');
     expect(config).toContain("process.env.GOOGLE_SERVICES_JSON?.trim()");
+    expect(config).toContain("process.env.GOOGLE_SERVICE_INFO_PLIST?.trim()");
     expect(config).toContain("existsSync(googleServicesSecretPath)");
     expect(config).toContain("googleServicesFile,");
+    expect(config).toContain("googleServicesFile: googleServiceInfoFile");
+    expect(config).toContain('"react-native-nitro-google-signin"');
+
     const packageJson = JSON.parse(readFileSync("package.json", "utf8")) as { scripts?: Record<string, string> };
     expect(packageJson.scripts?.["eas-build-pre-install"]).toBe("node scripts/validate-google-services.mjs");
+
     const validator = readFileSync("scripts/validate-google-services.mjs", "utf8");
-    expect(validator).toContain("copyFileSync(filePath, destinationPath)");
-    expect(validator).toContain('resolve(process.cwd(), "google-services.json")');
+    expect(validator).toContain('copyProtected(filePath, "google-services.json")');
+    expect(validator).toContain('copyProtected(filePath, "GoogleService-Info.plist")');
+    expect(validator).toContain("hasAndroidOauthClient");
+    expect(validator).toContain("hasWebOauthClient");
   });
 
-  it("matérialise et valide un secret fichier avant Expo Prebuild", () => {
+  it("matérialise et valide un secret Android OAuth avant Expo Prebuild", () => {
     const fixtureRoot = mkdtempSync(resolve(tmpdir(), "globallogix-eas-hook-"));
     const secretPath = resolve(fixtureRoot, "eas-file-secret.json");
     const buildRoot = resolve(fixtureRoot, "project");
@@ -52,7 +59,10 @@ describe("préparation Android notifications", () => {
         secretPath,
         JSON.stringify({
           project_info: { project_id: "globallogix-74286" },
-          client: [{ client_info: { android_client_info: { package_name: "com.app.globallogixmobile" } } }],
+          client: [{
+            client_info: { android_client_info: { package_name: "com.app.globallogixmobile" } },
+            oauth_client: [{ client_type: 1 }, { client_type: 3 }],
+          }],
         }),
       );
 
@@ -65,6 +75,39 @@ describe("préparation Android notifications", () => {
       const materializedPath = resolve(buildRoot, "google-services.json");
       expect(existsSync(materializedPath)).toBe(true);
       expect(JSON.parse(readFileSync(materializedPath, "utf8")).project_info.project_id).toBe("globallogix-74286");
+    } finally {
+      rmSync(fixtureRoot, { force: true, recursive: true });
+    }
+  });
+
+  it("matérialise et valide le secret Firebase iOS avant Expo Prebuild", () => {
+    const fixtureRoot = mkdtempSync(resolve(tmpdir(), "globallogix-eas-ios-hook-"));
+    const secretPath = resolve(fixtureRoot, "eas-file-secret.plist");
+    const buildRoot = resolve(fixtureRoot, "project");
+    const scriptPath = resolve(process.cwd(), "scripts/validate-google-services.mjs");
+
+    try {
+      mkdirSync(buildRoot);
+      writeFileSync(
+        secretPath,
+        `<?xml version="1.0" encoding="UTF-8"?>
+<plist version="1.0"><dict>
+<key>PROJECT_ID</key><string>globallogix-74286</string>
+<key>BUNDLE_ID</key><string>com.app.globallogixmobile</string>
+<key>CLIENT_ID</key><string>ios-client.apps.googleusercontent.com</string>
+<key>REVERSED_CLIENT_ID</key><string>com.googleusercontent.apps.ios-client</string>
+</dict></plist>`,
+      );
+
+      execFileSync(process.execPath, [scriptPath], {
+        cwd: buildRoot,
+        env: { ...process.env, EAS_BUILD_PLATFORM: "ios", GOOGLE_SERVICE_INFO_PLIST: secretPath },
+        stdio: "pipe",
+      });
+
+      const materializedPath = resolve(buildRoot, "GoogleService-Info.plist");
+      expect(existsSync(materializedPath)).toBe(true);
+      expect(readFileSync(materializedPath, "utf8")).toContain("com.app.globallogixmobile");
     } finally {
       rmSync(fixtureRoot, { force: true, recursive: true });
     }

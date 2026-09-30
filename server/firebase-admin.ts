@@ -68,9 +68,8 @@ export async function setGlobalLogixClaims(input: {
   agencyId: string | null;
   disabled?: boolean;
 }) {
-  if (input.role !== "super_admin" && input.role !== "client" && !input.agencyId) {
-    throw new Error("agencyId est obligatoire pour un rôle non global");
-  }
+  const isGlobalRole = input.role === "super_admin" || input.role === "client";
+  const agencyId = isGlobalRole ? null : normalizeAgencyId(input.agencyId ?? "");
   const auth = getAdminAuth();
   const user = await auth.getUser(input.uid);
   const existing = user.customClaims ?? {};
@@ -79,15 +78,15 @@ export async function setGlobalLogixClaims(input: {
     role: input.role,
     disabled: input.disabled === true,
   };
-  if (input.role === "super_admin" || input.role === "client") {
+  if (isGlobalRole) {
     delete nextClaims.agencyId;
   } else {
-    nextClaims.agencyId = input.agencyId;
+    nextClaims.agencyId = agencyId;
   }
   await auth.setCustomUserClaims(input.uid, nextClaims);
   return {
     role: input.role,
-    agencyId: input.role === "super_admin" || input.role === "client" ? null : input.agencyId,
+    agencyId,
     disabled: input.disabled === true,
   };
 }

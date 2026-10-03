@@ -7,6 +7,7 @@ import { RdcFlagAccent } from "@/components/rdc-flag-accent";
 import { GlobalLogixBrandLogo } from "@/components/globallogix-brand-logo";
 import { GoogleAuthSplash } from "@/components/google-auth-splash";
 import type { GoogleAuthPhase } from "@/components/google-auth-progress";
+import { PwaInstallButton } from "@/components/pwa-install-button";
 import { ThemeToggleButton } from "@/components/theme-toggle-button";
 import { useAuth } from "@/lib/auth-context";
 import { useThemeContext } from "@/lib/theme-provider";
@@ -79,6 +80,7 @@ export default function LoginScreen() {
           <Text style={styles.brand}>GlobalLogix</Text>
           <Text style={styles.tagline}>Opérations logistiques, où que vous soyez.</Text>
           <View style={styles.flagWrap}><RdcFlagAccent /></View>
+          <PwaInstallButton compact />
         </View>
         <View style={[styles.formCard, dark && styles.formCardDark]}>
         <Text style={[styles.title, dark && styles.textLight]}>Accès agence</Text>

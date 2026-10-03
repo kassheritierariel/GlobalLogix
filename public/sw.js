@@ -1,6 +1,6 @@
 /* GlobalLogix PWA: never store HTML navigations or account-specific content. */
 const CACHE_PREFIX = "globallogix-pwa";
-const CACHE_VERSION = "v3";
+const CACHE_VERSION = "v4";
 const CACHE_NAME = `${CACHE_PREFIX}-${CACHE_VERSION}`;
 const PUBLIC_SHELL = [
   "/offline.html",

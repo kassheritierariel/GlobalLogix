@@ -67,12 +67,16 @@ describe("service worker PWA : confidentialité des comptes", () => {
       "https://globallogix.example/shipment/secret",
       { private: true },
     );
+    (await worker.cacheStorage.open("globallogix-pwa-v3")).put(
+      "https://globallogix.example/_expo/static/old.js",
+      { public: true },
+    );
     await worker.dispatch("install");
     await worker.dispatch("activate");
-    expect([...worker.entries.keys()]).toEqual(["globallogix-pwa-v3"]);
+    expect([...worker.entries.keys()]).toEqual(["globallogix-pwa-v4"]);
     expect(await worker.cacheStorage.match("https://globallogix.example/shipment/secret")).toBeUndefined();
-    expect(worker.entries.get("globallogix-pwa-v3")?.has("/")).toBe(false);
-    expect(worker.entries.get("globallogix-pwa-v3")?.has("/login")).toBe(false);
+    expect(worker.entries.get("globallogix-pwa-v4")?.has("/")).toBe(false);
+    expect(worker.entries.get("globallogix-pwa-v4")?.has("/login")).toBe(false);
   });
 
   it("ne conserve jamais les navigations de client, agence ou administrateur", async () => {

@@ -61,8 +61,14 @@ export function NetworkStatusBanner() {
           showOffline();
         }
       };
-      const handleOnline = () => {
+      const handleOnline = async () => {
         if (!wasOffline.current) return;
+        try {
+          const response = await fetch(`/api/health?network-restored=${Date.now()}`, { cache: "no-store" });
+          if (!response.ok || !mounted) return;
+        } catch {
+          return;
+        }
         wasOffline.current = false;
         setStatus("online");
         scheduleHide();
@@ -153,6 +159,9 @@ export function NetworkStatusBanner() {
           <MaterialIcon name={online ? "wifi" : "wifi-off"} size={20} color={online ? "#147A46" : "#CE1126"} />
         </View>
         <View style={styles.copy}>
+          <Text style={[styles.badge, online ? styles.badgeOnline : styles.badgeOffline]}>
+            {online ? "EN LIGNE" : checking ? "RECONNEXION" : "MODE HORS LIGNE"}
+          </Text>
           <Text style={styles.title}>{online ? "Connexion rétablie" : checking ? "Vérification en cours" : "Connexion Internet perdue"}</Text>
           <Text style={styles.message}>{online ? "La synchronisation des expéditions reprend automatiquement." : checking ? "GlobalLogix vérifie l’accès au réseau…" : "Mode hors ligne : certaines données peuvent ne pas être à jour."}</Text>
         </View>
@@ -180,6 +189,9 @@ const styles = StyleSheet.create({
   iconWrap: { alignItems: "center", backgroundColor: "#FFE3DE", borderRadius: 12, height: 40, justifyContent: "center", width: 40 },
   iconWrapOnline: { backgroundColor: "#D6F0E0" },
   copy: { flex: 1, marginHorizontal: 10 },
+  badge: { alignSelf: "flex-start", borderRadius: 6, color: "#FFFFFF", fontSize: 10, fontWeight: "900", letterSpacing: 0.5, marginBottom: 4, overflow: "hidden", paddingHorizontal: 7, paddingVertical: 3 },
+  badgeOffline: { backgroundColor: "#A12725" },
+  badgeOnline: { backgroundColor: "#147A46" },
   title: { color: "#062B5C", fontSize: 13, fontWeight: "900" },
   message: { color: "#52677C", fontSize: 10, lineHeight: 15, marginTop: 3 },
   retry: { alignItems: "center", backgroundColor: "#F7D116", borderRadius: 11, justifyContent: "center", minHeight: 40, minWidth: 80, paddingHorizontal: 11 },

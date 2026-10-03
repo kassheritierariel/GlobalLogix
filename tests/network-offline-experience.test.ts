@@ -34,6 +34,6 @@ describe("expérience réseau et hors ligne", () => {
     expect(offline).toContain('cache: "no-store"');
     expect(offline).toContain('window.addEventListener("online", retryConnection)');
     expect(offline).toContain('window.location.replace("/")');
-    expect(worker).toContain('const CACHE_VERSION = "v3"');
+    expect(worker).toContain('const CACHE_VERSION = "v4"');
   });
 });

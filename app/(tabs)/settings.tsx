@@ -5,6 +5,7 @@ import { ActivityIndicator, FlatList, Pressable, StyleSheet, Switch, Text, View 
 
 import { ScreenContainer } from "@/components/screen-container";
 import { ScrollJumpControls } from "@/components/scroll-jump-controls";
+import { PwaInstallButton } from "@/components/pwa-install-button";
 import { useAuth } from "@/lib/auth-context";
 import { getFirebaseIdToken } from "@/lib/firebase";
 import { haptic } from "@/lib/haptics";
@@ -114,6 +115,7 @@ export default function SettingsScreen() {
                   <Text style={styles.profileMeta}>{user?.role} · {user?.agencyId ?? "Périmètre global"}</Text>
                 </View>
               </View>
+              <PwaInstallButton />
             </View>
           )}
           renderItem={({ item }) => item.href ? (

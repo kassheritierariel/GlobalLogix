@@ -3,6 +3,14 @@ import type { PropsWithChildren } from "react";
 
 const serviceWorkerRegistration = `
 (() => {
+  window.addEventListener("beforeinstallprompt", (event) => {
+    event.preventDefault();
+    window.__globallogixInstallPrompt = event;
+    window.dispatchEvent(new Event("globallogix:install-available"));
+  });
+  window.addEventListener("appinstalled", () => {
+    window.__globallogixInstallPrompt = null;
+  });
   if (!("serviceWorker" in navigator)) return;
   const hostname = window.location.hostname;
   const isTemporaryPreview = hostname.endsWith(".manus.computer");

@@ -1,10 +1,8 @@
-/* GlobalLogix PWA service worker: shell cache only, network-first navigation. */
+/* GlobalLogix PWA: never store HTML navigations or account-specific content. */
 const CACHE_PREFIX = "globallogix-pwa";
-const CACHE_VERSION = "v2";
+const CACHE_VERSION = "v3";
 const CACHE_NAME = `${CACHE_PREFIX}-${CACHE_VERSION}`;
-const APP_SHELL = [
-  "/",
-  "/login",
+const PUBLIC_SHELL = [
   "/offline.html",
   "/manifest.json",
   "/pwa/icon-192.png",
@@ -14,19 +12,21 @@ const APP_SHELL = [
 ];
 
 self.addEventListener("install", (event) => {
-  event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL)));
+  event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(PUBLIC_SHELL)));
   self.skipWaiting();
 });
 
 self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches.keys().then((names) => Promise.all(
-      names
-        .filter((name) => name.startsWith(CACHE_PREFIX) && name !== CACHE_NAME)
-        .map((name) => caches.delete(name)),
-    )),
+    caches.keys().then(async (names) => {
+      await Promise.all(
+        names
+          .filter((name) => name.startsWith(CACHE_PREFIX) && name !== CACHE_NAME)
+          .map((name) => caches.delete(name)),
+      );
+      await self.clients.claim();
+    }),
   );
-  self.clients.claim();
 });
 
 self.addEventListener("fetch", (event) => {
@@ -37,32 +37,27 @@ self.addEventListener("fetch", (event) => {
   if (url.origin !== self.location.origin || url.pathname.startsWith("/api/")) return;
 
   if (request.mode === "navigate") {
-    event.respondWith(
-      fetch(request)
-        .then(async (response) => {
-          if (response.ok) await caches.open(CACHE_NAME).then((cache) => cache.put(request, response.clone()));
-          return response;
-        })
-        .catch(async () => (
-          (await caches.match(request))
-          || (await caches.match("/offline.html"))
-          || Response.error()
-        )),
-    );
+    // The route may show tenant data after login. Never write or read HTML from cache.
+    event.respondWith(fetch(request).catch(async () => (
+      (await caches.match("/offline.html")) || Response.error()
+    )));
     return;
   }
 
-  if (["font", "image", "script", "style"].includes(request.destination)) {
-    event.respondWith(
-      caches.match(request).then((cached) => {
-        const fresh = fetch(request).then(async (response) => {
-          if (response.ok) await caches.open(CACHE_NAME).then((cache) => cache.put(request, response.clone()));
-          return response;
-        });
-        return cached || fresh;
-      }),
-    );
-  }
+  const isPublicAsset = url.pathname.startsWith("/_expo/static/")
+    || url.pathname.startsWith("/pwa/")
+    || url.pathname === "/manifest.json"
+    || url.pathname === "/offline.html";
+  if (!isPublicAsset) return;
+
+  event.respondWith(caches.match(request).then(async (cached) => {
+    if (cached) return cached;
+    const response = await fetch(request);
+    if (response.ok && response.type !== "opaque") {
+      await caches.open(CACHE_NAME).then((cache) => cache.put(request, response.clone()));
+    }
+    return response;
+  }));
 });
 
 self.addEventListener("message", (event) => {
